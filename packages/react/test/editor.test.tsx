@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi } from 'vitest';
-import React, { createRef } from 'react';
+import { createRef, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AuroraEditor, type AuroraEditorRef } from '../src/index.js';
 import type { AuroraDocument } from '@aurora/model';
@@ -20,10 +20,9 @@ describe('React AuroraEditor Bridge', () => {
     const onChange = vi.fn();
 
     const root = createRoot(container);
-    root.render(<AuroraEditor ref={ref} document={emptyDocument} onChange={onChange} />);
-
-    // Wait for effect mount
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await act(async () => {
+      root.render(<AuroraEditor ref={ref} document={emptyDocument} onChange={onChange} />);
+    });
 
     expect(ref.current).not.toBeNull();
     const doc = ref.current?.getDocument();

@@ -7,9 +7,10 @@ export function cleanPastedHtml(html: string): string {
 
   let clean = html;
 
-  // 1. Remove XML declarations and conditional comments
+  // 1. Remove XML declarations, style tags, and conditional comments
   clean = clean.replace(/<!--[\s\S]*?-->/g, '');
   clean = clean.replace(/<\?xml[^>]*>/gi, '');
+  clean = clean.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
 
   // 2. Remove Word specific tags (<o:p>, <w:worddocument>, etc.)
   clean = clean.replace(/<\/?\w+:[^>]*>/gi, '');
@@ -32,7 +33,10 @@ export function cleanPastedHtml(html: string): string {
   });
 
   // 4. Normalize MS Word bullet lists: convert paragraphs with list markers to clean <li>
-  clean = clean.replace(/<p[^>]*class=["']?MsoListParagraph[^"']*["']?[^>]*>(?:<span[^>]*>[·•\-\d.]+<\/span>)?\s*([\s\S]*?)<\/p>/gi, '<li>$1</li>');
+  clean = clean.replace(/<p[^>]*class=["']?MsoListParagraph[^"']*["']?[^>]*>([\s\S]*?)<\/p>/gi, (_match, inner) => {
+    const stripped = inner.replace(/^(?:<span[^>]*>|[·•\-\d.\s]|&nbsp;|<\/span>)+/gi, '').trim();
+    return `<li>${stripped}</li>`;
+  });
 
   // 5. Clean empty spans and empty class attributes
   clean = clean.replace(/<span\s*>(.*?)<\/span>/gi, '$1');

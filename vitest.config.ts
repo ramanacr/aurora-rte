@@ -14,6 +14,7 @@ export default defineConfig({
     }
   },
   test: {
+    exclude: ['**/dist/**', '**/node_modules/**'],
     environment: 'happy-dom',
     globals: true
   }

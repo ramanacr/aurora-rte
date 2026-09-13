@@ -1,0 +1,16 @@
+{
+  "format": "aurora",
+  "version": 1,
+  "content": [
+    {
+      "type": "custom_block",
+      "attrs": {
+        "extensionId": "@untrusted-actor/arbitrary-exploit",
+        "data": {
+          "code": "process.exit(1)",
+          "payload": "<script>alert('pwn')</script>"
+        }
+      }
+    }
+  ]
+}

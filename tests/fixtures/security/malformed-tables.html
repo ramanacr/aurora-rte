@@ -1,0 +1,14 @@
+<!-- Malformed table fixture: unclosed tags, mismatched rows and cols, recursive tables -->
+<table>
+  <tr>
+    <td>Unclosed cell
+    <td>Another cell
+  </tr>
+  <table>
+    <tr><td>Nested table without tbody</td></tr>
+  </table>
+  <tr>
+    <td colspan="999999">Huge colspan</td>
+  </tr>
+</table>
+<p>Post-table paragraph</p>

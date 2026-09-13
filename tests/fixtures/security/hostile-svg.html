@@ -1,0 +1,9 @@
+<!-- Hostile SVG vectors with active scripts, xlink:href, external entities, animations -->
+<svg xmlns="http://www.w3.org/2000/svg">
+  <script type="text/javascript">alert('SVG Script Execution');</script>
+  <circle cx="50" cy="50" r="50" fill="red"/>
+  <a xlink:href="javascript:alert('SVG Xlink')"><text y="20">Click</text></a>
+  <animate onbegin="alert('SVG Animate')" attributeName="x" dur="1s"/>
+  <set attributeName="onmouseover" to="alert('SVG Set')"/>
+</svg>
+<p>Safe content after SVG</p>

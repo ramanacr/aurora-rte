@@ -1,5 +1,5 @@
 import type { AuroraEditor } from '@aurora/editor';
-import type { AuroraDocument, AuroraNode } from '@aurora/model';
+import type { AuroraNode } from '@aurora/model';
 
 export interface ExtensionSchemaAdditions {
   type: string;

@@ -20,12 +20,18 @@ export function auroraToProseMirror(doc: AuroraDocument, schema: Schema = aurora
     }
 
     if (node.type === 'text') {
-      return schema.text(node.text || '', marks);
+      if (!node.text) {
+        throw new Error('Text node must contain non-empty text');
+      }
+      return schema.text(node.text, marks);
     }
 
     const children: PMNode[] = [];
     if (node.content) {
       for (const child of node.content) {
+        if (child.type === 'text' && (!child.text || child.text.length === 0)) {
+          continue;
+        }
         children.push(convertNode(child));
       }
     }

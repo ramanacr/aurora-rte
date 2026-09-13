@@ -52,7 +52,7 @@ export function createEditor(options: EditorOptions = {}): AuroraEditor {
     : {
         format: 'aurora',
         version: 1,
-        content: [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]
+        content: [{ type: 'paragraph' }]
       };
 
   const listeners = new Map<EditorEventName, Set<Function>>();

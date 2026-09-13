@@ -1,0 +1,10 @@
+<!-- DOM Clobbering vector attempting to clobber window/document properties -->
+<div>
+  <form id="document">
+    <input name="cookie" value="stolen_cookie" />
+    <input id="body" name="body" value="clobbered_body" />
+  </form>
+  <a id="location" href="https://attacker.com">clobber location</a>
+  <img name="getElementById" src="x" />
+  <p>Legitimate text inside DOM clobbering attempt</p>
+</div>

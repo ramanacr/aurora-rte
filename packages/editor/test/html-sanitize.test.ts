@@ -14,7 +14,7 @@ describe('HTML Sanitization and Import/Export', () => {
   });
 
   it('sanitizes hostile HTML fixture removing scripts, iframes, and javascript: links', () => {
-    const fixturePath = path.resolve(__dirname, '../../../tests/fixtures/html/hostile.html');
+    const fixturePath = path.resolve(import.meta.dirname, '../../../tests/fixtures/html/hostile.html');
     const rawHtml = fs.readFileSync(fixturePath, 'utf-8');
 
     const doc = importHtml(rawHtml);

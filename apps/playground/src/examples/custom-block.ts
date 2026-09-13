@@ -19,8 +19,8 @@ export const calloutBlock: CustomBlockDefinition<CalloutData> = defineCustomBloc
       typeof d.message === 'string'
     );
   },
-  fallbackText: (data) => `[${data.type.toUpperCase()}] ${data.title}: ${data.message}`,
-  renderEditable: (data, onUpdate) => {
+  fallbackText: (data: CalloutData) => `[${data.type.toUpperCase()}] ${data.title}: ${data.message}`,
+  renderEditable: (data: CalloutData, _onUpdate) => {
     const el = document.createElement('div');
     el.className = `aurora-callout aurora-callout-${data.type}`;
     el.style.cssText = 'padding: 12px; border-left: 4px solid var(--aurora-primary, #28E6F5); background: var(--aurora-muted-bg, #0b204c); border-radius: 4px; margin: 8px 0;';
@@ -37,13 +37,13 @@ export const calloutBlock: CustomBlockDefinition<CalloutData> = defineCustomBloc
     el.appendChild(msgEl);
     return el;
   },
-  renderReadOnly: (data) => {
+  renderReadOnly: (data: CalloutData) => {
     return `<div class="callout callout-${data.type}"><strong>${data.title}</strong><p>${data.message}</p></div>`;
   },
-  toHtml: (data) => {
+  toHtml: (data: CalloutData) => {
     return `<aside class="callout callout-${data.type}"><h4>${data.title}</h4><p>${data.message}</p></aside>`;
   },
-  toMarkdown: (data) => {
+  toMarkdown: (data: CalloutData) => {
     return `> [!${data.type.toUpperCase()}]\n> **${data.title}**\n> ${data.message}\n\n`;
   }
 });

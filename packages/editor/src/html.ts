@@ -1,13 +1,6 @@
 import type { AuroraDocument, AuroraNode, AuroraMark } from '@aurora/model';
 import { validateDocument } from '@aurora/model';
 
-const ALLOWED_TAGS = new Set([
-  'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code',
-  'hr', 'ul', 'ol', 'li', 'table', 'tbody', 'thead', 'tr', 'td', 'th',
-  'strong', 'b', 'em', 'i', 'u', 's', 'del', 'strike', 'sub', 'sup',
-  'a', 'img', 'br', 'span', 'div'
-]);
-
 const ALLOWED_URL_SCHEMES = ['http:', 'https:', 'mailto:', 'tel:'];
 
 export function sanitizeUrl(url: string, allowImageData = false): string | null {
@@ -62,7 +55,6 @@ export function importHtml(html: string): AuroraDocument {
   // Matches block tags or fallback to paragraphs
   const blockRegex = /<(p|h[1-6]|blockquote|pre|hr|ul|ol|table|div)([^>]*)>([\s\S]*?)<\/\1>|<(hr|img)([^>]*)\/?>/gi;
   let match: RegExpExecArray | null;
-  let lastIndex = 0;
 
   function parseInline(contentHtml: string): AuroraNode[] {
     const inlines: AuroraNode[] = [];

@@ -48,11 +48,16 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@types/node@26.5.1)(happy-dom@20.14.5)(vite@8.3.0(@types/node@26.5.1))
 
+  apps/docs: {}
+
   apps/playground:
     dependencies:
       '@aurora/editor':
         specifier: workspace:*
         version: link:../../packages/editor
+      '@aurora/extension-sdk':
+        specifier: workspace:*
+        version: link:../../packages/extension-sdk
       '@aurora/features':
         specifier: workspace:*
         version: link:../../packages/features
@@ -123,6 +128,12 @@ importers:
         specifier: ^1.37.2
         version: 1.42.3
 
+  packages/enterprise-review:
+    dependencies:
+      '@aurora/model':
+        specifier: workspace:*
+        version: link:../model
+
   packages/extension-sdk:
     dependencies:
       '@aurora/editor':
@@ -184,6 +195,16 @@ importers:
       '@aurora/ui':
         specifier: workspace:*
         version: link:../ui
+
+  services/content:
+    dependencies:
+      '@aurora/model':
+        specifier: workspace:*
+        version: link:../../packages/model
+
+  services/gateway: {}
+
+  services/review: {}
 
 packages:
 

@@ -2,9 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   acceptSuggestion,
   rejectSuggestion,
-  createSuggestion,
-  type Actor,
-  type Suggestion
+  type Actor
 } from '../src/suggestions.js';
 import type { AuroraDocument } from '@aurora/model';
 

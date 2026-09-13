@@ -1,0 +1,19 @@
+{
+  "format": "aurora",
+  "version": 1,
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Extremely large payload fixture testing memory bounds and schema limits."
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "fixture": "huge-document",
+    "description": "Used in security and limit enforcement tests"
+  }
+}

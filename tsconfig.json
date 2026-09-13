@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/model" },
+    { "path": "packages/engine-prosemirror" },
+    { "path": "packages/editor" },
+    { "path": "packages/features" },
+    { "path": "packages/ui" },
+    { "path": "packages/extension-sdk" },
+    { "path": "packages/web-component" },
+    { "path": "packages/angular" },
+    { "path": "packages/react" },
+    { "path": "packages/enterprise-review" },
+    { "path": "services/review" },
+    { "path": "services/content" },
+    { "path": "services/gateway" },
+    { "path": "apps/playground" }
+  ]
+}

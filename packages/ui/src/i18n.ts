@@ -30,7 +30,7 @@ export const DEFAULT_EN_STRINGS: LocaleDictionary = {
 let currentDictionary: LocaleDictionary = { ...DEFAULT_EN_STRINGS };
 
 export function setLocaleDictionary(dict: Partial<LocaleDictionary>): void {
-  currentDictionary = { ...DEFAULT_EN_STRINGS, ...dict };
+  currentDictionary = { ...DEFAULT_EN_STRINGS, ...(dict as LocaleDictionary) };
 }
 
 export function t(key: string, fallback?: string): string {

@@ -1,5 +1,3 @@
-import { authorize, type Claims } from './auth.js';
-
 export interface HealthStatus {
   status: 'ok' | 'degraded';
   uptime: number;

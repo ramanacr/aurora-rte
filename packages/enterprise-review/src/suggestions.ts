@@ -1,4 +1,4 @@
-import type { AuroraDocument, AuroraNode, AuroraMark } from '@aurora/model';
+import type { AuroraDocument, AuroraNode } from '@aurora/model';
 import { validateDocument } from '@aurora/model';
 
 export type SuggestionMode = 'insert' | 'delete' | 'replace';

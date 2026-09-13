@@ -108,7 +108,7 @@ export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAcc
     this.onModelTouched = fn;
   }
 
-  setDisabledState?(isDisabled: boolean): void {
+  setDisabledState?(_isDisabled: boolean): void {
     // Optionally toggle editable
   }
 

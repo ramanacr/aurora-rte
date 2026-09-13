@@ -2,7 +2,7 @@ import { EditorState, Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { history, undo, redo } from 'prosemirror-history';
 import { toggleMark, setBlockType, wrapIn } from 'prosemirror-commands';
-import { wrapInList, splitListItem, liftListItem } from 'prosemirror-schema-list';
+import { wrapInList } from 'prosemirror-schema-list';
 import type { AuroraDocument, JsonPatch } from '@aurora/model';
 import { validateDocument } from '@aurora/model';
 import { auroraSchema } from './schema.js';
@@ -83,7 +83,7 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
       });
     }
 
-    if (tr.selectionSet || tr.docChanged) {
+    if (tr.selectionSet || tr.docChanged || tr.storedMarksSet) {
       const { from, to, empty } = state.selection;
       const marks: string[] = [];
       if (empty) {

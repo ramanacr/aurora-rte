@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@aurora/editor": "workspace:*",
+    "@aurora/extension-sdk": "workspace:*",
     "@aurora/features": "workspace:*",
     "@aurora/model": "workspace:*",
     "@aurora/ui": "workspace:*"
