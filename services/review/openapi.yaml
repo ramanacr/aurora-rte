@@ -1,0 +1,138 @@
+openapi: 3.0.3
+info:
+  title: Aurora Review and Comments Service API
+  description: Tenant-scoped microservice for persistent comments, review anchors, and audit trails.
+  version: 1.0.0
+servers:
+  - url: /v1
+paths:
+  /documents/{documentId}/comments:
+    get:
+      summary: List all comment threads for a document
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Tenant-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of comment threads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommentThread'
+        '401':
+          description: Missing or invalid tenant authorization
+    post:
+      summary: Create a new comment thread
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Tenant-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentRequest'
+      responses:
+        '201':
+          description: Created comment thread
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentThread'
+        '400':
+          description: Invalid request payload
+components:
+  schemas:
+    CommentAnchor:
+      type: object
+      required:
+        - from
+        - to
+      properties:
+        from:
+          type: integer
+        to:
+          type: integer
+        textSnippet:
+          type: string
+    CommentMessage:
+      type: object
+      required:
+        - id
+        - author
+        - content
+        - createdAt
+      properties:
+        id:
+          type: string
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CommentThread:
+      type: object
+      required:
+        - id
+        - tenantId
+        - documentId
+        - anchor
+        - messages
+        - resolved
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        documentId:
+          type: string
+        anchor:
+          $ref: '#/components/schemas/CommentAnchor'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentMessage'
+        resolved:
+          type: boolean
+    CreateCommentRequest:
+      type: object
+      required:
+        - anchor
+        - message
+      properties:
+        anchor:
+          $ref: '#/components/schemas/CommentAnchor'
+        message:
+          type: string
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
