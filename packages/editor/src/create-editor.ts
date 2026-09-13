@@ -1,6 +1,8 @@
 import type { AuroraDocument } from '@aurora/model';
 import { validateDocument } from '@aurora/model';
 import { createEngineAdapter, type EngineAdapter } from '@aurora/engine-prosemirror';
+import { exportHtml } from './html.js';
+import { exportMarkdown } from './markdown.js';
 import type {
   EditorChange,
   EditorEventMap,
@@ -102,6 +104,10 @@ export function createEditor(options: EditorOptions = {}): AuroraEditor {
     export(request: ExportRequest): string {
       const doc = adapter.getDocument();
       switch (request.format) {
+        case 'html':
+          return exportHtml(doc);
+        case 'markdown':
+          return exportMarkdown(doc);
         case 'json':
           return JSON.stringify(doc, null, 2);
         case 'text': {

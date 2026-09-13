@@ -22,3 +22,14 @@ export {
   type CommandName,
   type CommandResult
 } from './commands.js';
+
+export {
+  importHtml,
+  exportHtml,
+  sanitizeUrl
+} from './html.js';
+
+export {
+  importMarkdown,
+  exportMarkdown
+} from './markdown.js';
