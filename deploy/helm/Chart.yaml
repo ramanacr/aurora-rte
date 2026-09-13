@@ -1,0 +1,11 @@
+apiVersion: v2
+name: aurora-services
+description: Production Helm chart for Aurora Enterprise review, gateway, and content microservices
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - rich-text-editor
+  - enterprise
+  - collaboration
+  - review
