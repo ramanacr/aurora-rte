@@ -1,0 +1,24 @@
+{
+  "name": "aurora-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r --filter=!docs build",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:property": "vitest run --testPathPattern=property",
+    "test:security": "vitest run --testPathPattern=security",
+    "test:a11y": "vitest run --testPathPattern=a11y",
+    "test:bridges": "vitest run --testPathPattern=bridges|bridge",
+    "test:enterprise": "vitest run --testPathPattern=enterprise",
+    "check-boundaries": "node scripts/check-package-boundaries.mjs",
+    "typecheck": "tsc --build"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "fast-check": "^4.10.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  }
+}
