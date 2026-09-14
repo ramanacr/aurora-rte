@@ -8,8 +8,30 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./html-authoring": {
+      "types": "./src/html-authoring/index.ts",
+      "import": "./src/html-authoring/index.ts"
     }
   },
+  "publishConfig": {
+    "main": "./dist/src/index.js",
+    "types": "./dist/src/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/src/index.d.ts",
+        "import": "./dist/src/index.js"
+      },
+      "./html-authoring": {
+        "types": "./dist/src/html-authoring/index.d.ts",
+        "import": "./dist/src/html-authoring/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "files": [
+    "dist/src"
+  ],
   "peerDependencies": {
     "@angular/core": ">=16.0.0",
     "@angular/forms": ">=16.0.0",

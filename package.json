@@ -13,7 +13,10 @@
     "test:bridges": "vitest run --testPathPattern=bridges|bridge",
     "test:enterprise": "vitest run --testPathPattern=enterprise",
     "check-boundaries": "node scripts/check-package-boundaries.mjs",
-    "typecheck": "tsc --build"
+    "typecheck": "tsc --build",
+    "version:bump": "node scripts/auto-version.mjs",
+    "package:all": "node scripts/package-all.mjs",
+    "release:check": "node scripts/check-package-boundaries.mjs && pnpm run typecheck && pnpm test"
   },
   "devDependencies": {
     "@angular/compiler": "^22.1.6",

@@ -33,3 +33,6 @@ yarn-error.log*
 
 # CodeGraph
 .codegraph/
+
+# Release Staging
+release-artifacts/

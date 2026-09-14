@@ -10,6 +10,21 @@
       "import": "./src/index.ts"
     }
   },
+  "publishConfig": {
+    "main": "./dist/src/index.js",
+    "types": "./dist/src/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/src/index.d.ts",
+        "import": "./dist/src/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "files": [
+    "dist/src",
+    "dist/bundle"
+  ],
   "dependencies": {
     "@aurora/editor": "workspace:*",
     "@aurora/model": "workspace:*",
