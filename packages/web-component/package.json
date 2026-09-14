@@ -1,7 +1,12 @@
 {
-  "name": "@aurora/web-component",
+  "name": "@ramanacr/aurora-web-component",
   "version": "0.1.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ramanacr/aurora-rte.git",
+    "directory": "packages/web-component"
+  },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -11,6 +16,7 @@
     }
   },
   "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
     "main": "./dist/src/index.js",
     "types": "./dist/src/index.d.ts",
     "exports": {
