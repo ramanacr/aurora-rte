@@ -9,9 +9,17 @@
   },
   "dependencies": {
     "@aurora/editor": "workspace:*",
+    "@aurora/enterprise-review": "workspace:*",
     "@aurora/extension-sdk": "workspace:*",
     "@aurora/features": "workspace:*",
     "@aurora/model": "workspace:*",
-    "@aurora/ui": "workspace:*"
+    "@aurora/react": "workspace:*",
+    "@aurora/ui": "workspace:*",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
   }
 }

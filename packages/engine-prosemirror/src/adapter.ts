@@ -1,8 +1,22 @@
-import { EditorState, Transaction } from 'prosemirror-state';
+import { EditorState, Transaction, NodeSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { history, undo, redo } from 'prosemirror-history';
-import { toggleMark, setBlockType, wrapIn } from 'prosemirror-commands';
+import { keymap } from 'prosemirror-keymap';
+import {
+  baseKeymap,
+  chainCommands,
+  deleteSelection,
+  joinBackward,
+  selectNodeBackward,
+  joinForward,
+  selectNodeForward,
+  toggleMark,
+  setBlockType,
+  wrapIn
+} from 'prosemirror-commands';
 import { wrapInList } from 'prosemirror-schema-list';
+
+type Command = (state: EditorState, dispatch?: (tr: Transaction) => void) => boolean;
 import type { AuroraDocument, JsonPatch } from '@aurora/model';
 import { validateDocument } from '@aurora/model';
 import { auroraSchema } from './schema.js';
@@ -21,11 +35,19 @@ export interface SelectionInfo {
   selectedText?: string;
   activeMarks: string[];
   activeBlockType: string;
+  activeAlignment?: string;
+  activeFontFamily?: string;
+  activeFontSize?: string;
+  isInTable?: boolean;
+  activeLinkAttrs?: { href: string; title?: string; target?: string };
+  selectedNodeType?: string;
+  selectedNodeAttrs?: Record<string, unknown>;
 }
 
 export interface EngineAdapterOptions {
   document: AuroraDocument;
   element?: HTMLElement | null;
+  editable?: boolean;
   onChange?: (change: {
     document: AuroraDocument;
     patches: readonly JsonPatch[];
@@ -33,6 +55,7 @@ export interface EngineAdapterOptions {
     transactionId: string;
   }) => void;
   onSelectionChange?: (selection: SelectionInfo) => void;
+  onPasteImage?: (file: File) => Promise<{ src: string; alt?: string; title?: string } | void> | void;
 }
 
 export interface EngineAdapter {
@@ -41,17 +64,130 @@ export interface EngineAdapter {
   execute(commandName: string, input?: unknown): CommandResult;
   focus(): void;
   destroy(): void;
+  isEditable(): boolean;
+  setEditable(editable: boolean): void;
 }
+
+const deleteTableCommand: Command = (state, dispatch) => {
+  const { $from, from: selFrom } = state.selection;
+  for (let d = $from.depth; d > 0; d--) {
+    if ($from.node(d).type === auroraSchema.nodes.table) {
+      if (dispatch) {
+        const from = $from.before(d);
+        const to = $from.after(d);
+        const tr = state.tr.delete(from, to);
+        if (tr.doc.content.size === 0) {
+          tr.insert(0, auroraSchema.nodes.paragraph.create());
+        }
+        dispatch(tr);
+      }
+      return true;
+    }
+  }
+
+  if ($from.nodeAfter && $from.nodeAfter.type === auroraSchema.nodes.table) {
+    if (dispatch) {
+      const tr = state.tr.delete(selFrom, selFrom + $from.nodeAfter.nodeSize);
+      if (tr.doc.content.size === 0) {
+        tr.insert(0, auroraSchema.nodes.paragraph.create());
+      }
+      dispatch(tr);
+    }
+    return true;
+  }
+
+  if ($from.nodeBefore && $from.nodeBefore.type === auroraSchema.nodes.table) {
+    if (dispatch) {
+      const tr = state.tr.delete(selFrom - $from.nodeBefore.nodeSize, selFrom);
+      if (tr.doc.content.size === 0) {
+        tr.insert(0, auroraSchema.nodes.paragraph.create());
+      }
+      dispatch(tr);
+    }
+    return true;
+  }
+
+  let nearestTable: { from: number; to: number } | null = null;
+  state.doc.descendants((node, pos) => {
+    if (node.type === auroraSchema.nodes.table) {
+      if (!nearestTable || Math.abs(pos - selFrom) < Math.abs(nearestTable.from - selFrom)) {
+        nearestTable = { from: pos, to: pos + node.nodeSize };
+      }
+    }
+  });
+
+  const targetTable = nearestTable as { from: number; to: number } | null;
+  if (targetTable && dispatch) {
+    const tr = state.tr.delete(targetTable.from, targetTable.to);
+    if (tr.doc.content.size === 0) {
+      tr.insert(0, auroraSchema.nodes.paragraph.create());
+    }
+    dispatch(tr);
+    return true;
+  }
+
+  return false;
+};
+
+const smartBackspace: Command = chainCommands(
+  deleteSelection,
+  (state, dispatch) => {
+    const { $from, empty } = state.selection;
+    if (!empty) return false;
+    for (let d = $from.depth; d > 0; d--) {
+      if ($from.node(d).type === auroraSchema.nodes.table) {
+        const tableNode = $from.node(d);
+        if ($from.parentOffset === 0 && tableNode.textContent.trim() === '') {
+          return deleteTableCommand(state, dispatch);
+        }
+      }
+    }
+    return false;
+  },
+  joinBackward,
+  selectNodeBackward
+);
+
+const smartDelete: Command = chainCommands(
+  deleteSelection,
+  (state, dispatch) => {
+    const { $from, empty } = state.selection;
+    if (!empty) return false;
+    for (let d = $from.depth; d > 0; d--) {
+      if ($from.node(d).type === auroraSchema.nodes.table) {
+        const tableNode = $from.node(d);
+        if (tableNode.textContent.trim() === '') {
+          return deleteTableCommand(state, dispatch);
+        }
+      }
+    }
+    return false;
+  },
+  joinForward,
+  selectNodeForward
+);
 
 export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapter {
   const initialValidated = validateDocument(options.document);
   let currentAuroraDoc = initialValidated;
   let pmDoc = auroraToProseMirror(initialValidated, auroraSchema);
 
+  const plugins = [
+    history(),
+    keymap({
+      'Mod-z': undo,
+      'Mod-y': redo,
+      'Shift-Mod-z': redo,
+      'Backspace': smartBackspace,
+      'Delete': smartDelete
+    }),
+    keymap(baseKeymap)
+  ];
+
   let state = EditorState.create({
     doc: pmDoc,
     schema: auroraSchema,
-    plugins: [history()]
+    plugins
   });
 
   let view: EditorView | null = null;
@@ -99,7 +235,51 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
         marks.push(...selMarks);
       }
 
+      let activeFontFamily: string | undefined;
+      let activeFontSize: string | undefined;
+      const checkMarks = empty
+        ? state.storedMarks || state.selection.$from.marks()
+        : state.selection.$from.marks();
+
+      for (const m of checkMarks) {
+        if (m.type.name === 'fontFamily' && m.attrs.family) {
+          activeFontFamily = m.attrs.family;
+        }
+        if (m.type.name === 'fontSize' && m.attrs.size) {
+          activeFontSize = m.attrs.size;
+        }
+      }
+
+      let activeLinkAttrs: { href: string; title?: string; target?: string } | undefined;
+      for (const m of checkMarks) {
+        if (m.type.name === 'link' && m.attrs.href) {
+          activeLinkAttrs = {
+            href: m.attrs.href,
+            title: m.attrs.title || undefined,
+            target: m.attrs.target || undefined
+          };
+          break;
+        }
+      }
+
+      let isInTable = false;
+      for (let d = state.selection.$from.depth; d > 0; d--) {
+        const typeName = state.selection.$from.node(d).type.name;
+        if (typeName === 'table' || typeName === 'table_row' || typeName === 'table_cell' || typeName === 'table_header') {
+          isInTable = true;
+          break;
+        }
+      }
+
+      let selectedNodeType: string | undefined;
+      let selectedNodeAttrs: Record<string, unknown> | undefined;
+      if (state.selection instanceof NodeSelection) {
+        selectedNodeType = state.selection.node.type.name;
+        selectedNodeAttrs = state.selection.node.attrs;
+      }
+
       const activeBlockType = state.selection.$from.parent.type.name;
+      const activeAlignment = (state.selection.$from.parent.attrs.align as string) || 'left';
       const selectedText = empty ? '' : state.doc.textBetween(from, to);
 
       options.onSelectionChange?.({
@@ -108,16 +288,124 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
         to,
         selectedText,
         activeMarks: marks,
-        activeBlockType
+        activeBlockType,
+        activeAlignment,
+        activeFontFamily,
+        activeFontSize,
+        isInTable,
+        activeLinkAttrs,
+        selectedNodeType,
+        selectedNodeAttrs
       });
     }
   }
 
+  let isEditable = options.editable !== false;
+
   if (options.element) {
+    if (!isEditable) {
+      options.element.setAttribute('data-readonly', 'true');
+      options.element.classList.add('aurora-readonly');
+    }
+
     view = new EditorView(options.element, {
       state,
+      editable: () => isEditable,
       dispatchTransaction(tr) {
         dispatchTransaction(tr, 'user');
+      },
+      handleClickOn(view, _pos, node, nodePos) {
+        if (!isEditable) {
+          return false;
+        }
+        if (node.type === auroraSchema.nodes.image) {
+          view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, nodePos)));
+          return true;
+        }
+        return false;
+      },
+      handlePaste(_view, event) {
+        if (!isEditable) {
+          return false;
+        }
+        const items = event.clipboardData?.items;
+        const files = event.clipboardData?.files;
+
+        let imageFile: File | null = null;
+        if (files && files.length > 0) {
+          for (let i = 0; i < files.length; i++) {
+            if (files[i].type.startsWith('image/')) {
+              imageFile = files[i];
+              break;
+            }
+          }
+        }
+        if (!imageFile && items && items.length > 0) {
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].type.startsWith('image/')) {
+              imageFile = items[i].getAsFile();
+              break;
+            }
+          }
+        }
+
+        if (imageFile) {
+          event.preventDefault();
+          if (options.onPasteImage) {
+            Promise.resolve(options.onPasteImage(imageFile)).then((res) => {
+              if (res && res.src) {
+                execute('insertImage', res);
+              }
+            });
+          } else {
+            const reader = new FileReader();
+            reader.onload = () => {
+              if (typeof reader.result === 'string') {
+                execute('insertImage', {
+                  src: reader.result,
+                  alt: imageFile?.name || 'Pasted image'
+                });
+              }
+            };
+            reader.readAsDataURL(imageFile);
+          }
+          return true;
+        }
+        return false;
+      },
+      handleDrop(_view, event) {
+        if (!isEditable) {
+          return false;
+        }
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+          for (let i = 0; i < files.length; i++) {
+            if (files[i].type.startsWith('image/')) {
+              event.preventDefault();
+              const file = files[i];
+              if (options.onPasteImage) {
+                Promise.resolve(options.onPasteImage(file)).then((res) => {
+                  if (res && res.src) {
+                    execute('insertImage', res);
+                  }
+                });
+              } else {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  if (typeof reader.result === 'string') {
+                    execute('insertImage', {
+                      src: reader.result,
+                      alt: file.name || 'Dropped image'
+                    });
+                  }
+                };
+                reader.readAsDataURL(file);
+              }
+              return true;
+            }
+          }
+        }
+        return false;
       }
     });
   }
@@ -194,6 +482,41 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
         break;
       }
 
+      case 'setTextAlign':
+      case 'alignLeft':
+      case 'alignCenter':
+      case 'alignRight':
+      case 'alignJustify': {
+        const align =
+          commandName === 'alignLeft'
+            ? 'left'
+            : commandName === 'alignCenter'
+            ? 'center'
+            : commandName === 'alignRight'
+            ? 'right'
+            : commandName === 'alignJustify'
+            ? 'justify'
+            : String(payload.alignment || payload.align || 'left');
+
+        executed = runPMCommand((state, dispatch) => {
+          const { from, to } = state.selection;
+          let tr = state.tr;
+          let changed = false;
+          state.doc.nodesBetween(from, to, (node, pos) => {
+            if (node.type === auroraSchema.nodes.paragraph || node.type === auroraSchema.nodes.heading) {
+              tr = tr.setNodeMarkup(pos, undefined, { ...node.attrs, align });
+              changed = true;
+            }
+          });
+          if (changed && dispatch) {
+            dispatch(tr);
+            return true;
+          }
+          return changed;
+        });
+        break;
+      }
+
       case 'toggleBulletList':
         executed = runPMCommand(wrapInList(auroraSchema.nodes.bullet_list));
         break;
@@ -216,9 +539,19 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
         if (!href) {
           executed = runPMCommand(toggleMark(auroraSchema.marks.link));
         } else {
-          executed = runPMCommand(
-            toggleMark(auroraSchema.marks.link, { href, title, target, rel: 'noopener noreferrer' })
-          );
+          const mark = auroraSchema.marks.link.create({ href, title, target, rel: 'noopener noreferrer' });
+          if (state.selection.empty) {
+            const text = payload.text ? String(payload.text) : href;
+            const textNode = auroraSchema.text(text, [mark]);
+            const tr = state.tr.replaceSelectionWith(textNode, false);
+            dispatchTransaction(tr, 'command');
+            executed = true;
+          } else {
+            const { from, to } = state.selection;
+            const tr = state.tr.addMark(from, to, mark);
+            dispatchTransaction(tr, 'command');
+            executed = true;
+          }
         }
         break;
       }
@@ -237,10 +570,133 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
         const src = String(payload.src || '');
         const alt = String(payload.alt || '');
         const title = String(payload.title || '');
-        const node = auroraSchema.nodes.image.create({ src, alt, title });
-        const tr = state.tr.replaceSelectionWith(node);
-        dispatchTransaction(tr, 'command');
-        executed = true;
+        const width = payload.width || null;
+        const height = payload.height || null;
+        const align = payload.align || 'center';
+        const rounded = Boolean(payload.rounded);
+        const shadow = Boolean(payload.shadow);
+        const border = Boolean(payload.border);
+        const linkUrl = String(payload.linkUrl || '');
+        if (src) {
+          const node = auroraSchema.nodes.image.create({
+            src,
+            alt,
+            title,
+            width,
+            height,
+            align,
+            rounded,
+            shadow,
+            border,
+            linkUrl
+          });
+          const tr = state.tr.replaceSelectionWith(node);
+          dispatchTransaction(tr, 'command');
+          executed = true;
+        }
+        break;
+      }
+
+      case 'deleteImage': {
+        executed = runPMCommand((s, dispatch) => {
+          if (s.selection instanceof NodeSelection && s.selection.node.type === auroraSchema.nodes.image) {
+            if (dispatch) dispatch(s.tr.deleteSelection());
+            return true;
+          }
+          const pos = typeof (payload as any)?.pos === 'number' ? (payload as any).pos : null;
+          if (pos !== null) {
+            const node = s.doc.nodeAt(pos);
+            if (node && node.type === auroraSchema.nodes.image) {
+              if (dispatch) dispatch(s.tr.delete(pos, pos + node.nodeSize));
+              return true;
+            }
+          }
+          return false;
+        });
+        break;
+      }
+
+      case 'updateImage': {
+        const {
+          src,
+          alt,
+          title,
+          width,
+          height,
+          aspectRatio,
+          sizingMode,
+          lockAspectRatio,
+          objectFit,
+          align,
+          rounded,
+          shadow,
+          border,
+          linkUrl,
+          pos
+        } = (payload || {}) as {
+          src?: string;
+          alt?: string;
+          title?: string;
+          width?: string | number | null;
+          height?: string | number | null;
+          aspectRatio?: string | null;
+          sizingMode?: 'responsive' | 'fixed';
+          lockAspectRatio?: boolean;
+          objectFit?: string;
+          align?: string;
+          rounded?: boolean;
+          shadow?: boolean;
+          border?: boolean;
+          linkUrl?: string;
+          pos?: number;
+        };
+        executed = runPMCommand((s, dispatch) => {
+          let targetPos: number | null = typeof pos === 'number' ? pos : null;
+          let targetNode: any = null;
+
+          if (targetPos === null && s.selection instanceof NodeSelection && s.selection.node.type === auroraSchema.nodes.image) {
+            targetPos = s.selection.from;
+            targetNode = s.selection.node;
+          } else if (targetPos !== null) {
+            targetNode = s.doc.nodeAt(targetPos);
+          }
+
+          if ((targetPos === null || !targetNode) && src) {
+            s.doc.descendants((node, p) => {
+              if (node.type === auroraSchema.nodes.image && node.attrs.src === src) {
+                targetPos = p;
+                targetNode = node;
+                return false;
+              }
+              return true;
+            });
+          }
+
+          if (targetPos !== null && targetNode && targetNode.type === auroraSchema.nodes.image) {
+            if (dispatch) {
+              const nextAttrs = {
+                ...targetNode.attrs,
+                ...(src !== undefined ? { src } : {}),
+                ...(alt !== undefined ? { alt } : {}),
+                ...(title !== undefined ? { title } : {}),
+                ...(width !== undefined ? { width } : {}),
+                ...(height !== undefined ? { height } : {}),
+                ...(aspectRatio !== undefined ? { aspectRatio } : {}),
+                ...(sizingMode !== undefined ? { sizingMode } : {}),
+                ...(lockAspectRatio !== undefined ? { lockAspectRatio } : {}),
+                ...(objectFit !== undefined ? { objectFit } : {}),
+                ...(align !== undefined ? { align } : {}),
+                ...(rounded !== undefined ? { rounded } : {}),
+                ...(shadow !== undefined ? { shadow } : {}),
+                ...(border !== undefined ? { border } : {}),
+                ...(linkUrl !== undefined ? { linkUrl } : {})
+              };
+              dispatch(s.tr.setNodeMarkup(targetPos, undefined, nextAttrs));
+            }
+            return true;
+          }
+          return false;
+        });
         break;
       }
 
@@ -298,6 +754,559 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
         break;
       }
 
+      case 'deleteTable':
+        executed = runPMCommand(deleteTableCommand);
+        break;
+
+      case 'addTableRowAbove':
+      case 'addTableRowBelow': {
+        const insertAbove = commandName === 'addTableRowAbove';
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          let rowDepth = -1;
+          for (let d = $from.depth; d > 0; d--) {
+            if ($from.node(d).type === auroraSchema.nodes.table_row) rowDepth = d;
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+          if (tableDepth === -1 || rowDepth === -1) return false;
+          if (dispatch) {
+            const rowNode = $from.node(rowDepth);
+            const cols = rowNode.childCount;
+            const newCells = [];
+            for (let c = 0; c < cols; c++) {
+              newCells.push(auroraSchema.nodes.table_cell.create(null, [auroraSchema.nodes.paragraph.create()]));
+            }
+            const newRow = auroraSchema.nodes.table_row.create(null, newCells);
+            const pos = insertAbove ? $from.before(rowDepth) : $from.after(rowDepth);
+            const tr = state.tr.insert(pos, newRow);
+            dispatch(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'deleteTableRow': {
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          let rowDepth = -1;
+          for (let d = $from.depth; d > 0; d--) {
+            if ($from.node(d).type === auroraSchema.nodes.table_row) rowDepth = d;
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+          if (tableDepth === -1 || rowDepth === -1) return false;
+          const tableNode = $from.node(tableDepth);
+          if (tableNode.childCount <= 1) {
+            return deleteTableCommand(state, dispatch);
+          }
+          if (dispatch) {
+            const tr = state.tr.delete($from.before(rowDepth), $from.after(rowDepth));
+            dispatch(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'addTableColBefore':
+      case 'addTableColAfter': {
+        const insertBefore = commandName === 'addTableColBefore';
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          let cellIndex = -1;
+          for (let d = $from.depth; d > 0; d--) {
+            if ($from.node(d).type === auroraSchema.nodes.table_cell || $from.node(d).type === auroraSchema.nodes.table_header) {
+              cellIndex = $from.index(d - 1);
+            }
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+          if (tableDepth === -1 || cellIndex === -1) return false;
+          if (dispatch) {
+            let tr = state.tr;
+            const tablePos = $from.before(tableDepth);
+            const tableNode = state.doc.nodeAt(tablePos);
+            if (!tableNode) return false;
+
+            let offset = tablePos + 1;
+            for (let r = 0; r < tableNode.childCount; r++) {
+              const row = tableNode.child(r);
+              const targetCol = insertBefore ? cellIndex : cellIndex + 1;
+              let currentCellIdx = 0;
+              let insertPos = offset;
+              row.forEach((_cell, cellOffset) => {
+                if (currentCellIdx === targetCol) {
+                  insertPos = offset + cellOffset;
+                }
+                currentCellIdx++;
+              });
+              if (targetCol >= row.childCount) {
+                insertPos = offset + row.content.size;
+              }
+              const isHeaderRow = row.child(0)?.type === auroraSchema.nodes.table_header;
+              const newCell = isHeaderRow
+                ? auroraSchema.nodes.table_header.create(null, [auroraSchema.nodes.paragraph.create()])
+                : auroraSchema.nodes.table_cell.create(null, [auroraSchema.nodes.paragraph.create()]);
+
+              tr = tr.insert(insertPos, newCell);
+              offset += row.nodeSize + newCell.nodeSize;
+            }
+            dispatch(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'deleteTableCol': {
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          let cellIndex = -1;
+          for (let d = $from.depth; d > 0; d--) {
+            if ($from.node(d).type === auroraSchema.nodes.table_cell || $from.node(d).type === auroraSchema.nodes.table_header) {
+              cellIndex = $from.index(d - 1);
+            }
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+          if (tableDepth === -1 || cellIndex === -1) return false;
+          const tableNode = $from.node(tableDepth);
+          if (tableNode.child(0).childCount <= 1) {
+            return deleteTableCommand(state, dispatch);
+          }
+          if (dispatch) {
+            let tr = state.tr;
+            const tablePos = $from.before(tableDepth);
+            let offset = tablePos + 1;
+            for (let r = 0; r < tableNode.childCount; r++) {
+              const row = tableNode.child(r);
+              let currentCellIdx = 0;
+              let cellPos = -1;
+              let cellSize = 0;
+              row.forEach((cell, cellOffset) => {
+                if (currentCellIdx === cellIndex) {
+                  cellPos = offset + cellOffset;
+                  cellSize = cell.nodeSize;
+                }
+                currentCellIdx++;
+              });
+              if (cellPos !== -1) {
+                tr = tr.delete(cellPos, cellPos + cellSize);
+                offset += row.nodeSize - cellSize;
+              } else {
+                offset += row.nodeSize;
+              }
+            }
+            dispatch(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'updateTable': {
+        const tableAttrs = payload as {
+          tableWidth?: string;
+          bordered?: boolean;
+          striped?: boolean;
+          headerRow?: boolean;
+        };
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          for (let d = $from.depth; d > 0; d--) {
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+          if (tableDepth === -1) return false;
+          if (dispatch) {
+            const tablePos = $from.before(tableDepth);
+            const tableNode = state.doc.nodeAt(tablePos);
+            if (!tableNode) return false;
+            const nextAttrs = {
+              ...tableNode.attrs,
+              ...(tableAttrs.tableWidth !== undefined ? { tableWidth: tableAttrs.tableWidth } : {}),
+              ...(tableAttrs.bordered !== undefined ? { bordered: tableAttrs.bordered } : {}),
+              ...(tableAttrs.striped !== undefined ? { striped: tableAttrs.striped } : {}),
+              ...(tableAttrs.headerRow !== undefined ? { headerRow: tableAttrs.headerRow } : {})
+            };
+            dispatch(state.tr.setNodeMarkup(tablePos, undefined, nextAttrs));
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'updateTableCell': {
+        const cellAttrs = payload as {
+          background?: string | null;
+          align?: 'left' | 'center' | 'right' | null;
+          colwidth?: string | number | null;
+        };
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let cellDepth = -1;
+          for (let d = $from.depth; d > 0; d--) {
+            const nodeType = $from.node(d).type;
+            if (nodeType === auroraSchema.nodes.table_cell || nodeType === auroraSchema.nodes.table_header) {
+              cellDepth = d;
+              break;
+            }
+          }
+          if (cellDepth === -1) return false;
+          if (dispatch) {
+            const cellPos = $from.before(cellDepth);
+            const cellNode = state.doc.nodeAt(cellPos);
+            if (!cellNode) return false;
+            const nextAttrs = {
+              ...cellNode.attrs,
+              ...(cellAttrs.background !== undefined ? { background: cellAttrs.background } : {}),
+              ...(cellAttrs.align !== undefined ? { align: cellAttrs.align } : {}),
+              ...(cellAttrs.colwidth !== undefined ? { colwidth: cellAttrs.colwidth } : {})
+            };
+            dispatch(state.tr.setNodeMarkup(cellPos, undefined, nextAttrs));
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'updateTableRow':
+      case 'setTableRowHeight': {
+        const { rowIndex, height, allRows } = (payload || {}) as {
+          rowIndex?: number;
+          height?: string | number | null;
+          allRows?: boolean;
+        };
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          let targetRow = rowIndex !== undefined ? rowIndex : -1;
+
+          for (let d = $from.depth; d > 0; d--) {
+            if (targetRow === -1 && $from.node(d).type === auroraSchema.nodes.table_row) {
+              targetRow = $from.index(d - 1);
+            }
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+
+          let tablePos = tableDepth !== -1 ? $from.before(tableDepth) : -1;
+          if (tablePos === -1) {
+            state.doc.descendants((node, pos) => {
+              if (tablePos === -1 && node.type === auroraSchema.nodes.table) {
+                tablePos = pos;
+                return false;
+              }
+              return true;
+            });
+          }
+
+          if (tablePos === -1) return false;
+          if (dispatch) {
+            let tr = state.tr;
+            const tableNode = state.doc.nodeAt(tablePos);
+            if (!tableNode) return false;
+
+            let offset = tablePos + 1;
+            for (let r = 0; r < tableNode.childCount; r++) {
+              const row = tableNode.child(r);
+              const rowPos = offset;
+              if (allRows || r === (targetRow !== -1 ? targetRow : 0)) {
+                const nextAttrs = {
+                  ...row.attrs,
+                  height: height !== undefined ? height : null
+                };
+                tr = tr.setNodeMarkup(rowPos, undefined, nextAttrs);
+              }
+              offset += row.nodeSize;
+            }
+            dispatch(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'setTableColWidth': {
+        const { colIndex, width } = (payload || {}) as { colIndex?: number; width: string | number | null };
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          let targetCol = colIndex !== undefined ? colIndex : -1;
+
+          for (let d = $from.depth; d > 0; d--) {
+            if (targetCol === -1 && ($from.node(d).type === auroraSchema.nodes.table_cell || $from.node(d).type === auroraSchema.nodes.table_header)) {
+              targetCol = $from.index(d - 1);
+            }
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+
+          let tablePos = tableDepth !== -1 ? $from.before(tableDepth) : -1;
+          if (tablePos === -1) {
+            state.doc.descendants((node, pos) => {
+              if (tablePos === -1 && node.type === auroraSchema.nodes.table) {
+                tablePos = pos;
+                return false;
+              }
+              return true;
+            });
+          }
+
+          if (tablePos === -1) return false;
+          const actualCol = targetCol !== -1 ? targetCol : 0;
+
+          if (dispatch) {
+            let tr = state.tr;
+            const tableNode = state.doc.nodeAt(tablePos);
+            if (!tableNode) return false;
+
+            let offset = tablePos + 1;
+            for (let r = 0; r < tableNode.childCount; r++) {
+              const row = tableNode.child(r);
+              let cIdx = 0;
+              let cellPos = -1;
+              let currentCellNode: any = null;
+
+              row.forEach((cell, cellOffset) => {
+                if (cIdx === actualCol) {
+                  cellPos = offset + cellOffset;
+                  currentCellNode = cell;
+                }
+                cIdx++;
+              });
+
+              if (cellPos !== -1 && currentCellNode) {
+                const nextAttrs = {
+                  ...currentCellNode.attrs,
+                  colwidth: width !== undefined ? width : null
+                };
+                tr = tr.setNodeMarkup(cellPos, undefined, nextAttrs);
+              }
+              offset += row.nodeSize;
+            }
+            dispatch(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'distributeTableCols': {
+        executed = runPMCommand((state, dispatch) => {
+          const { $from } = state.selection;
+          let tableDepth = -1;
+          for (let d = $from.depth; d > 0; d--) {
+            if ($from.node(d).type === auroraSchema.nodes.table) {
+              tableDepth = d;
+              break;
+            }
+          }
+
+          let tablePos = tableDepth !== -1 ? $from.before(tableDepth) : -1;
+          if (tablePos === -1) {
+            state.doc.descendants((node, pos) => {
+              if (tablePos === -1 && node.type === auroraSchema.nodes.table) {
+                tablePos = pos;
+                return false;
+              }
+              return true;
+            });
+          }
+
+          if (tablePos === -1) return false;
+          if (dispatch) {
+            let tr = state.tr;
+            const tableNode = state.doc.nodeAt(tablePos);
+            if (!tableNode) return false;
+
+            const colCount = tableNode.child(0)?.childCount || 1;
+            const evenWidth = `${Math.floor(100 / colCount)}%`;
+
+            let offset = tablePos + 1;
+            for (let r = 0; r < tableNode.childCount; r++) {
+              const row = tableNode.child(r);
+              row.forEach((cell, cellOffset) => {
+                const cellPos = offset + cellOffset;
+                tr = tr.setNodeMarkup(cellPos, undefined, {
+                  ...cell.attrs,
+                  colwidth: evenWidth
+                });
+              });
+              offset += row.nodeSize;
+            }
+            dispatch(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'setTextColor': {
+        const color = payload.color ? String(payload.color) : null;
+        if (!color) {
+          executed = runPMCommand((s, d) => {
+            const { from, to } = s.selection;
+            if (d) d(s.tr.removeMark(from, to, auroraSchema.marks.textColor));
+            return true;
+          });
+        } else {
+          const mark = auroraSchema.marks.textColor.create({ color });
+          executed = runPMCommand((s, d) => {
+            const { from, to } = s.selection;
+            if (d) {
+              const tr = s.tr.removeMark(from, to, auroraSchema.marks.textColor).addMark(from, to, mark);
+              d(tr);
+            }
+            return true;
+          });
+        }
+        break;
+      }
+
+      case 'setTextHighlight': {
+        const color = payload.color ? String(payload.color) : null;
+        if (!color) {
+          executed = runPMCommand((s, d) => {
+            const { from, to } = s.selection;
+            if (d) d(s.tr.removeMark(from, to, auroraSchema.marks.textHighlight));
+            return true;
+          });
+        } else {
+          const mark = auroraSchema.marks.textHighlight.create({ color });
+          executed = runPMCommand((s, d) => {
+            const { from, to } = s.selection;
+            if (d) {
+              const tr = s.tr.removeMark(from, to, auroraSchema.marks.textHighlight).addMark(from, to, mark);
+              d(tr);
+            }
+            return true;
+          });
+        }
+        break;
+      }
+
+      case 'setFontFamily': {
+        const family = payload.family ? String(payload.family) : null;
+        if (!family) {
+          executed = runPMCommand((s, d) => {
+            const { from, to, empty } = s.selection;
+            if (empty) {
+              if (d) d(s.tr.removeStoredMark(auroraSchema.marks.fontFamily));
+            } else {
+              if (d) d(s.tr.removeMark(from, to, auroraSchema.marks.fontFamily));
+            }
+            return true;
+          });
+        } else {
+          const mark = auroraSchema.marks.fontFamily.create({ family });
+          executed = runPMCommand((s, d) => {
+            const { from, to, empty } = s.selection;
+            if (empty) {
+              if (d) d(s.tr.addStoredMark(mark));
+            } else {
+              if (d) {
+                const tr = s.tr.removeMark(from, to, auroraSchema.marks.fontFamily).addMark(from, to, mark);
+                d(tr);
+              }
+            }
+            return true;
+          });
+        }
+        break;
+      }
+
+      case 'setFontSize': {
+        const size = payload.size ? String(payload.size) : null;
+        if (!size) {
+          executed = runPMCommand((s, d) => {
+            const { from, to, empty } = s.selection;
+            if (empty) {
+              if (d) d(s.tr.removeStoredMark(auroraSchema.marks.fontSize));
+            } else {
+              if (d) d(s.tr.removeMark(from, to, auroraSchema.marks.fontSize));
+            }
+            return true;
+          });
+        } else {
+          const mark = auroraSchema.marks.fontSize.create({ size });
+          executed = runPMCommand((s, d) => {
+            const { from, to, empty } = s.selection;
+            if (empty) {
+              if (d) d(s.tr.addStoredMark(mark));
+            } else {
+              if (d) {
+                const tr = s.tr.removeMark(from, to, auroraSchema.marks.fontSize).addMark(from, to, mark);
+                d(tr);
+              }
+            }
+            return true;
+          });
+        }
+        break;
+      }
+
+      case 'clearFormatting': {
+        executed = runPMCommand((s, d) => {
+          const { from, to } = s.selection;
+          if (d) {
+            let tr = s.tr;
+            Object.values(auroraSchema.marks).forEach((markType) => {
+              tr = tr.removeMark(from, to, markType);
+            });
+            d(tr);
+          }
+          return true;
+        });
+        break;
+      }
+
+      case 'insertCallout': {
+        const type = String(payload.type || 'info');
+        const p = auroraSchema.nodes.paragraph.create(null, [auroraSchema.text(String(payload.text || 'Important notice or callout'))]);
+        const calloutNode = auroraSchema.nodes.callout.create({ type }, [p]);
+        const tr = state.tr.replaceSelectionWith(calloutNode);
+        dispatchTransaction(tr, 'command');
+        executed = true;
+        break;
+      }
+
+      case 'insertDetails': {
+        const title = String(payload.title || 'Details (click to expand)');
+        const summaryNode = auroraSchema.nodes.details_summary.create(null, [auroraSchema.text(title)]);
+        const bodyP = auroraSchema.nodes.paragraph.create(null, [auroraSchema.text(String(payload.text || 'Hidden details content goes here...'))]);
+        const detailsNode = auroraSchema.nodes.details.create(null, [summaryNode, bodyP]);
+        const tr = state.tr.replaceSelectionWith(detailsNode);
+        dispatchTransaction(tr, 'command');
+        executed = true;
+        break;
+      }
+
+      case 'deleteSelection':
+        executed = runPMCommand(deleteSelection);
+        break;
+
       case 'undo':
         executed = runPMCommand(undo);
         break;
@@ -343,6 +1352,26 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
     focus(): void {
       if (view) {
         view.focus();
+      }
+    },
+
+    isEditable(): boolean {
+      return isEditable;
+    },
+
+    setEditable(editable: boolean): void {
+      isEditable = editable;
+      if (view) {
+        view.setProps({ editable: () => isEditable });
+      }
+      if (options.element) {
+        if (isEditable) {
+          options.element.removeAttribute('data-readonly');
+          options.element.classList.remove('aurora-readonly');
+        } else {
+          options.element.setAttribute('data-readonly', 'true');
+          options.element.classList.add('aurora-readonly');
+        }
       }
     },
 

@@ -60,16 +60,27 @@ export const HIGH_CONTRAST_THEME: ThemeTokens = {
 
 export function applyTheme(element: HTMLElement, tokens: Partial<ThemeTokens> = AURORA_BRAND_THEME): void {
   const merged = { ...AURORA_BRAND_THEME, ...tokens };
-  element.style.setProperty('--aurora-bg', merged.bg);
-  element.style.setProperty('--aurora-fg', merged.fg);
-  element.style.setProperty('--aurora-muted-bg', merged.mutedBg);
-  element.style.setProperty('--aurora-muted-fg', merged.mutedFg);
-  element.style.setProperty('--aurora-border', merged.border);
-  element.style.setProperty('--aurora-primary', merged.primary);
-  element.style.setProperty('--aurora-primary-hover', merged.primaryHover);
-  element.style.setProperty('--aurora-accent', merged.accent);
-  element.style.setProperty('--aurora-focus-ring', merged.focusRing);
-  element.style.setProperty('--aurora-radius', merged.radius);
-  element.style.setProperty('--aurora-font-family', merged.fontFamily);
-  element.style.setProperty('--aurora-font-size', merged.fontSize);
+  const targetElements: HTMLElement[] = [element];
+
+  if (typeof document !== 'undefined') {
+    if (element === document.body || element === document.documentElement || element.id === 'app' || element.classList.contains('aurora-playground-container')) {
+      targetElements.push(document.body, document.documentElement);
+    }
+  }
+
+  targetElements.forEach((el) => {
+    if (!el || !el.style) return;
+    el.style.setProperty('--aurora-bg', merged.bg);
+    el.style.setProperty('--aurora-fg', merged.fg);
+    el.style.setProperty('--aurora-muted-bg', merged.mutedBg);
+    el.style.setProperty('--aurora-muted-fg', merged.mutedFg);
+    el.style.setProperty('--aurora-border', merged.border);
+    el.style.setProperty('--aurora-primary', merged.primary);
+    el.style.setProperty('--aurora-primary-hover', merged.primaryHover);
+    el.style.setProperty('--aurora-accent', merged.accent);
+    el.style.setProperty('--aurora-focus-ring', merged.focusRing);
+    el.style.setProperty('--aurora-radius', merged.radius);
+    el.style.setProperty('--aurora-font-family', merged.fontFamily);
+    el.style.setProperty('--aurora-font-size', merged.fontSize);
+  });
 }

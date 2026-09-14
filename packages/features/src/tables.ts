@@ -17,6 +17,9 @@ export function tables(options: TableOptions = {}) {
           const boundedRows = Math.min(Math.max(1, rows), maxRows);
           const boundedCols = Math.min(Math.max(1, cols), maxCols);
           return editor.execute('insertTable', { rows: boundedRows, cols: boundedCols, header });
+        },
+        deleteTable: () => {
+          return editor.execute('deleteTable');
         }
       };
     }

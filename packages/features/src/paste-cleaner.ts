@@ -44,3 +44,65 @@ export function cleanPastedHtml(html: string): string {
 
   return clean;
 }
+
+/**
+ * Formats raw HTML string with clean indentation and newlines for readable inspector display.
+ */
+export function formatHtml(html: string): string {
+  if (!html || typeof html !== 'string') return '';
+
+  const singleTags = new Set([
+    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+    'link', 'meta', 'param', 'source', 'track', 'wbr'
+  ]);
+
+  // Insert token boundaries around tags while preserving inner text
+  const tokens = html
+    .replace(/(<[^>]+>)/g, '\n$1\n')
+    .split('\n')
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+
+  let formatted = '';
+  let indentLevel = 0;
+  const indentStr = '  ';
+
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+
+    if (token.startsWith('</')) {
+      // Closing tag
+      indentLevel = Math.max(0, indentLevel - 1);
+      formatted += `${indentStr.repeat(indentLevel)}${token}\n`;
+    } else if (token.startsWith('<') && !token.startsWith('<!')) {
+      const match = /^<([a-zA-Z0-9_-]+)/.exec(token);
+      const tag = match ? match[1].toLowerCase() : '';
+      const isSelfClosing = token.endsWith('/>') || singleTags.has(tag);
+
+      // Check if next token is text and following token is the closing tag for this element
+      const nextToken = tokens[i + 1];
+      const afterNext = tokens[i + 2];
+      if (
+        !isSelfClosing &&
+        nextToken &&
+        !nextToken.startsWith('<') &&
+        afterNext === `</${tag}>`
+      ) {
+        // Render inline on one line: <p>Text</p>
+        formatted += `${indentStr.repeat(indentLevel)}${token}${nextToken}${afterNext}\n`;
+        i += 2; // skip text and closing tag
+      } else {
+        formatted += `${indentStr.repeat(indentLevel)}${token}\n`;
+        if (!isSelfClosing) {
+          indentLevel++;
+        }
+      }
+    } else {
+      // Standalone text or doctype/comment
+      formatted += `${indentStr.repeat(indentLevel)}${token}\n`;
+    }
+  }
+
+  return formatted.trim();
+}
+

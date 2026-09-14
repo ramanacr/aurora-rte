@@ -28,6 +28,7 @@ export interface HostUploadAdapter {
 export interface EditorOptions {
   document?: AuroraDocument;
   element?: HTMLElement | null;
+  editable?: boolean;
   upload?: HostUploadAdapter;
   features?: unknown[];
   theme?: {
@@ -37,6 +38,7 @@ export interface EditorOptions {
 }
 
 export interface AuroraEditor {
+  getElement(): HTMLElement | null;
   getDocument(): AuroraDocument;
   setDocument(document: AuroraDocument): void;
   execute(name: CommandName | string, input?: unknown): CommandResult;
@@ -44,6 +46,8 @@ export interface AuroraEditor {
   focus(options?: FocusOptions): void;
   on<K extends EditorEventName>(event: K, listener: EditorListener<K>): Unsubscribe;
   destroy(): void;
+  isEditable(): boolean;
+  setEditable(editable: boolean): void;
 }
 
 export function createEditor(options: EditorOptions = {}): AuroraEditor {
@@ -79,15 +83,26 @@ export function createEditor(options: EditorOptions = {}): AuroraEditor {
   const adapter: EngineAdapter = createEngineAdapter({
     document: initialDocument,
     element: options.element,
+    editable: options.editable,
     onChange(change: EditorChange) {
       emit('change', change);
     },
     onSelectionChange(selection: SelectionState) {
       emit('selectionChange', selection);
-    }
+    },
+    onPasteImage: options.upload
+      ? async (file: File) => {
+          const res = await options.upload!.uploadFile(file);
+          return { src: res.url, alt: res.alt, title: res.title };
+        }
+      : undefined
   });
 
   return {
+    getElement(): HTMLElement | null {
+      return options.element || null;
+    },
+
     getDocument(): AuroraDocument {
       return adapter.getDocument();
     },
@@ -142,6 +157,20 @@ export function createEditor(options: EditorOptions = {}): AuroraEditor {
       return () => {
         listeners.get(event)?.delete(listener as Function);
       };
+    },
+
+    isEditable(): boolean {
+      return adapter.isEditable();
+    },
+
+    setEditable(editable: boolean): void {
+      adapter.setEditable(editable);
+      emit('change', {
+        document: adapter.getDocument(),
+        patches: [],
+        origin: 'api',
+        transactionId: `setEditable_${Date.now()}`
+      });
     },
 
     destroy(): void {

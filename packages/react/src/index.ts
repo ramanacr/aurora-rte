@@ -5,3 +5,5 @@ export {
   type AuroraEditorProps,
   type AuroraEditorRef
 } from './editor.js';
+
+export * from './html-authoring/index.js';

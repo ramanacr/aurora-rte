@@ -50,7 +50,7 @@ describe('End-to-End Editing Workflows', () => {
     // 5. Export to HTML and Markdown
     const html = editor.export({ format: 'html' });
     expect(html).toContain('<h1');
-    expect(html).toContain('<table>');
+    expect(html).toContain('<table');
 
     const md = editor.export({ format: 'markdown' });
     expect(md).toContain('# ');

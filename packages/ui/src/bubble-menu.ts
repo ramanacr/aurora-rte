@@ -39,6 +39,10 @@ export function createBubbleMenu(options: BubbleMenuOptions): BubbleMenuInstance
   parent.appendChild(menu);
 
   const unsub = editor.on('selectionChange', (sel: SelectionState) => {
+    if (!editor.isEditable()) {
+      menu.style.display = 'none';
+      return;
+    }
     if (!sel.empty && sel.selectedText) {
       menu.style.display = 'flex';
       // If native browser selection available, position near selection

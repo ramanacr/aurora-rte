@@ -16,6 +16,13 @@ export interface SelectionState {
   selectedText?: string;
   activeMarks: string[];
   activeBlockType: string;
+  activeAlignment?: string;
+  activeFontFamily?: string;
+  activeFontSize?: string;
+  isInTable?: boolean;
+  activeLinkAttrs?: { href: string; title?: string; target?: string };
+  selectedNodeType?: string;
+  selectedNodeAttrs?: Record<string, unknown>;
 }
 
 export interface EditorErrorEvent {

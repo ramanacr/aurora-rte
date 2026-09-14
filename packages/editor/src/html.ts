@@ -157,16 +157,20 @@ export function importHtml(html: string): AuroraDocument {
     const rawAttrs = match[2] || match[5] || '';
     const inner = match[3] || '';
 
+    const alignMatch = /text-align:\s*(left|center|right|justify)/i.exec(rawAttrs) || /align=["'](left|center|right|justify)["']/i.exec(rawAttrs);
+    const align = alignMatch ? alignMatch[1].toLowerCase() : undefined;
+
     if (tag === 'p') {
       nodes.push({
         type: 'paragraph',
+        ...(align && align !== 'left' ? { attrs: { align } } : {}),
         content: parseInline(inner)
       });
     } else if (/^h[1-6]$/.test(tag)) {
       const level = parseInt(tag[1], 10);
       nodes.push({
         type: 'heading',
-        attrs: { level },
+        attrs: { level, ...(align && align !== 'left' ? { align } : {}) },
         content: parseInline(inner)
       });
     } else if (tag === 'blockquote') {
@@ -246,6 +250,22 @@ export function exportHtml(doc: AuroraDocument): string {
         return `<sub>${inner}</sub>`;
       case 'superscript':
         return `<sup>${inner}</sup>`;
+      case 'textColor': {
+        const color = mark.attrs?.color ? String(mark.attrs.color).replace(/["';<>]/g, '') : null;
+        return color ? `<span style="color: ${color}">${inner}</span>` : inner;
+      }
+      case 'textHighlight': {
+        const color = mark.attrs?.color ? String(mark.attrs.color).replace(/["';<>]/g, '') : '#ffeb3b';
+        return `<mark style="background-color: ${color}">${inner}</mark>`;
+      }
+      case 'fontFamily': {
+        const family = mark.attrs?.family ? String(mark.attrs.family).replace(/["';<>]/g, '') : null;
+        return family ? `<span style="font-family: ${family}">${inner}</span>` : inner;
+      }
+      case 'fontSize': {
+        const size = mark.attrs?.size ? String(mark.attrs.size).replace(/["';<>]/g, '') : null;
+        return size ? `<span style="font-size: ${size}">${inner}</span>` : inner;
+      }
       case 'link': {
         const href = mark.attrs?.href ? sanitizeUrl(String(mark.attrs.href)) : null;
         if (!href) return inner;
@@ -275,14 +295,27 @@ export function exportHtml(doc: AuroraDocument): string {
     const inner = (node.content || []).map(serializeNode).join('');
 
     switch (node.type) {
-      case 'paragraph':
-        return `<p>${inner}</p>`;
+      case 'paragraph': {
+        const align = node.attrs?.align;
+        const style = align && align !== 'left' ? ` style="text-align: ${align}"` : '';
+        return `<p${style}>${inner}</p>`;
+      }
       case 'heading': {
         const level = node.attrs?.level || 1;
-        return `<h${level}>${inner}</h${level}>`;
+        const align = node.attrs?.align;
+        const style = align && align !== 'left' ? ` style="text-align: ${align}"` : '';
+        return `<h${level}${style}>${inner}</h${level}>`;
       }
       case 'blockquote':
         return `<blockquote>${inner}</blockquote>`;
+      case 'callout': {
+        const type = node.attrs?.type || 'info';
+        return `<div data-aurora-callout="${type}" class="aurora-callout aurora-callout-${type}">${inner}</div>`;
+      }
+      case 'details':
+        return `<details class="aurora-details">${inner}</details>`;
+      case 'details_summary':
+        return `<summary class="aurora-summary">${inner}</summary>`;
       case 'code_block': {
         const lang = node.attrs?.language ? ` class="language-${node.attrs.language}"` : '';
         return `<pre><code${lang}>${inner}</code></pre>`;
@@ -295,18 +328,97 @@ export function exportHtml(doc: AuroraDocument): string {
         return `<ol>${inner}</ol>`;
       case 'list_item':
         return `<li>${inner}</li>`;
-      case 'table':
-        return `<table><tbody>${inner}</tbody></table>`;
-      case 'table_row':
-        return `<tr>${inner}</tr>`;
-      case 'table_cell':
-        return `<td>${inner}</td>`;
-      case 'table_header':
-        return `<th>${inner}</th>`;
+      case 'table': {
+        const tableWidth = node.attrs?.tableWidth || '100%';
+        const bordered = node.attrs?.bordered !== false;
+        const striped = Boolean(node.attrs?.striped);
+        const headerRow = node.attrs?.headerRow !== false;
+        const classes = ['aurora-table'];
+        if (bordered) classes.push('aurora-table-bordered');
+        if (striped) classes.push('aurora-table-striped');
+        if (headerRow) classes.push('aurora-table-header-row');
+        return `<table class="${classes.join(' ')}" style="width: ${tableWidth}; table-layout: fixed; border-collapse: collapse; margin: 12px 0;" data-table-width="${tableWidth}" data-bordered="${bordered}" data-striped="${striped}" data-header-row="${headerRow}"><tbody>${inner}</tbody></table>`;
+      }
+      case 'table_row': {
+        const height = node.attrs?.height ? String(node.attrs.height).replace(/["';<>]/g, '') : null;
+        const styleAttr = height ? ` style="height: ${height.endsWith('px') ? height : height + 'px'};"` : '';
+        const dataHeight = height ? ` data-height="${height}"` : '';
+        return `<tr${styleAttr}${dataHeight}>${inner}</tr>`;
+      }
+      case 'table_cell': {
+        const bg = node.attrs?.background ? String(node.attrs.background).replace(/["';<>]/g, '') : null;
+        const align = node.attrs?.align ? String(node.attrs.align).replace(/["';<>]/g, '') : null;
+        const colwidth = node.attrs?.colwidth ? String(node.attrs.colwidth).replace(/["';<>]/g, '') : null;
+        const styles: string[] = [];
+        if (colwidth) styles.push(`width: ${colwidth.endsWith('px') || colwidth.endsWith('%') ? colwidth : colwidth + 'px'}`);
+        if (bg) styles.push(`background-color: ${bg}`);
+        if (align) styles.push(`text-align: ${align}`);
+        const styleAttr = styles.length > 0 ? ` style="${styles.join('; ')}"` : '';
+        const dataBg = bg ? ` data-background="${bg}"` : '';
+        const dataAlign = align ? ` data-align="${align}"` : '';
+        const dataCol = colwidth ? ` data-colwidth="${colwidth}"` : '';
+        return `<td${styleAttr}${dataBg}${dataAlign}${dataCol}>${inner}</td>`;
+      }
+      case 'table_header': {
+        const bg = node.attrs?.background ? String(node.attrs.background).replace(/["';<>]/g, '') : null;
+        const align = node.attrs?.align ? String(node.attrs.align).replace(/["';<>]/g, '') : null;
+        const colwidth = node.attrs?.colwidth ? String(node.attrs.colwidth).replace(/["';<>]/g, '') : null;
+        const styles: string[] = [];
+        if (colwidth) styles.push(`width: ${colwidth.endsWith('px') || colwidth.endsWith('%') ? colwidth : colwidth + 'px'}`);
+        if (bg) styles.push(`background-color: ${bg}`);
+        if (align) styles.push(`text-align: ${align}`);
+        const styleAttr = styles.length > 0 ? ` style="${styles.join('; ')}"` : '';
+        const dataBg = bg ? ` data-background="${bg}"` : '';
+        const dataAlign = align ? ` data-align="${align}"` : '';
+        const dataCol = colwidth ? ` data-colwidth="${colwidth}"` : '';
+        return `<th${styleAttr}${dataBg}${dataAlign}${dataCol}>${inner}</th>`;
+      }
       case 'image': {
         const src = node.attrs?.src ? sanitizeUrl(String(node.attrs.src), true) : '';
         const alt = node.attrs?.alt ? String(node.attrs.alt).replace(/"/g, '&quot;') : '';
-        return src ? `<img src="${src}" alt="${alt}">` : '';
+        const title = node.attrs?.title ? String(node.attrs.title).replace(/"/g, '&quot;') : '';
+        const width = node.attrs?.width ? String(node.attrs.width).replace(/["';<>]/g, '') : null;
+        const height = node.attrs?.height ? String(node.attrs.height).replace(/["';<>]/g, '') : null;
+        const aspectRatio = node.attrs?.aspectRatio ? String(node.attrs.aspectRatio).replace(/["';<>]/g, '') : null;
+        const sizingMode = node.attrs?.sizingMode ? String(node.attrs.sizingMode).replace(/["';<>]/g, '') : null;
+        const lockAspectRatio = node.attrs?.lockAspectRatio !== false;
+        const objectFit = node.attrs?.objectFit ? String(node.attrs.objectFit).replace(/["';<>]/g, '') : null;
+        const align = node.attrs?.align ? String(node.attrs.align).replace(/["';<>]/g, '') : null;
+        const rounded = Boolean(node.attrs?.rounded);
+        const shadow = Boolean(node.attrs?.shadow);
+        const border = Boolean(node.attrs?.border);
+        const linkUrl = node.attrs?.linkUrl ? sanitizeUrl(String(node.attrs.linkUrl)) : null;
+
+        const styles: string[] = ['max-width: 100%'];
+        if (width) styles.push(`width: ${width}`);
+        if (height && height !== 'auto') styles.push(`height: ${height}`);
+        else if (!aspectRatio) styles.push('height: auto');
+        if (aspectRatio && aspectRatio !== 'auto') styles.push(`aspect-ratio: ${aspectRatio}`);
+        if (objectFit && (height || aspectRatio)) styles.push(`object-fit: ${objectFit}`);
+        if (align === 'center') styles.push('display: block; margin-left: auto; margin-right: auto');
+        else if (align === 'right') styles.push('display: block; margin-left: auto; margin-right: 0');
+        else if (align === 'left') styles.push('display: block; margin-left: 0; margin-right: auto');
+        if (rounded) styles.push('border-radius: 12px');
+        if (shadow) styles.push('box-shadow: 0 10px 25px rgba(0,0,0,0.25)');
+        if (border) styles.push('border: 2px solid #1a3366');
+
+        const styleAttr = styles.length > 0 ? ` style="${styles.join('; ')}"` : '';
+        const titleAttr = title ? ` title="${title}"` : '';
+        const dataAttrs = [
+          align ? ` data-align="${align}"` : '',
+          width ? ` data-width="${width}"` : '',
+          height ? ` data-height="${height}"` : '',
+          aspectRatio ? ` data-aspect-ratio="${aspectRatio}"` : '',
+          sizingMode ? ` data-sizing-mode="${sizingMode}"` : '',
+          lockAspectRatio === false ? ` data-lock-ratio="false"` : '',
+          objectFit ? ` data-object-fit="${objectFit}"` : '',
+          rounded ? ` data-rounded="true"` : '',
+          shadow ? ` data-shadow="true"` : '',
+          border ? ` data-border="true"` : ''
+        ].join('');
+
+        const imgTag = `<img src="${src}" alt="${alt}"${titleAttr}${styleAttr}${dataAttrs}>`;
+        return linkUrl ? `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${imgTag}</a>` : imgTag;
       }
       case 'embed': {
         const url = node.attrs?.url ? sanitizeUrl(String(node.attrs.url)) : '';

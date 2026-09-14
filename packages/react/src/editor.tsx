@@ -1,13 +1,34 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
-import { createEditor, type AuroraEditor, type EditorOptions, type EditorChange, type SelectionState, type ExportRequest, type CommandName } from '@aurora/editor';
+import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
+import {
+  createEditor,
+  type AuroraEditor,
+  type EditorOptions,
+  type EditorChange,
+  type SelectionState,
+  type ExportRequest,
+  type CommandName
+} from '@aurora/editor';
 import type { AuroraDocument } from '@aurora/model';
-import { createToolbar, type ToolbarInstance } from '@aurora/ui';
+import { createToolbar, type ToolbarInstance, type EditorMode, type RtePolicy } from '@aurora/ui';
+import {
+  AuroraProvider,
+  AuroraToolbar,
+  AuroraHtmlElementPicker,
+  AuroraCommandPalette,
+  AuroraElementInspector,
+  AuroraMobileActions
+} from './html-authoring/index.js';
 
 export interface AuroraEditorProps {
   document?: AuroraDocument;
   onChange?: (change: EditorChange) => void;
   onSelectionChange?: (selection: SelectionState) => void;
   toolbar?: boolean;
+  legacyToolbar?: boolean;
+  mode?: EditorMode;
+  policy?: RtePolicy;
+  enableAuthoringFeatures?: boolean;
+  enableMobileActions?: boolean;
   className?: string;
   style?: React.CSSProperties;
   editorOptions?: Omit<EditorOptions, 'document' | 'element'>;
@@ -45,6 +66,11 @@ export const AuroraEditorComponent = forwardRef<AuroraEditorRef, AuroraEditorPro
       onChange,
       onSelectionChange,
       toolbar = true,
+      legacyToolbar = false,
+      mode = 'standard',
+      policy,
+      enableAuthoringFeatures = true,
+      enableMobileActions = false,
       className = '',
       style,
       editorOptions
@@ -52,6 +78,7 @@ export const AuroraEditorComponent = forwardRef<AuroraEditorRef, AuroraEditorPro
 
     const editorMountRef = useRef<HTMLDivElement>(null);
     const toolbarMountRef = useRef<HTMLDivElement>(null);
+    const [editorInstance, setEditorInstance] = useState<AuroraEditor | null>(null);
     const editorRef = useRef<AuroraEditor | null>(null);
     const toolbarRef = useRef<ToolbarInstance | null>(null);
 
@@ -73,8 +100,9 @@ export const AuroraEditorComponent = forwardRef<AuroraEditorRef, AuroraEditorPro
         element: editorMountRef.current
       });
       editorRef.current = editor;
+      setEditorInstance(editor);
 
-      if (toolbar && toolbarMountRef.current) {
+      if (toolbar && legacyToolbar && toolbarMountRef.current) {
         toolbarRef.current = createToolbar({
           editor,
           container: toolbarMountRef.current
@@ -96,14 +124,30 @@ export const AuroraEditorComponent = forwardRef<AuroraEditorRef, AuroraEditorPro
         toolbarRef.current = null;
         editor.destroy();
         editorRef.current = null;
+        setEditorInstance(null);
       };
     }, []);
 
-    return (
+    const content = (
       <div className={`aurora-react-editor-container ${className}`.trim()} style={style}>
-        {toolbar && <div ref={toolbarMountRef} className="aurora-react-toolbar-mount" />}
+        {toolbar && legacyToolbar && <div ref={toolbarMountRef} className="aurora-react-toolbar-mount" />}
+        {toolbar && !legacyToolbar && <AuroraToolbar />}
         <div ref={editorMountRef} className="aurora-react-editor-mount" role="textbox" aria-multiline="true" />
+        {enableMobileActions && <AuroraMobileActions />}
+        <AuroraHtmlElementPicker />
+        <AuroraCommandPalette />
+        <AuroraElementInspector />
       </div>
     );
+
+    if (enableAuthoringFeatures) {
+      return (
+        <AuroraProvider editor={editorInstance} mode={mode} policy={policy}>
+          {content}
+        </AuroraProvider>
+      );
+    }
+
+    return content;
   }
 );

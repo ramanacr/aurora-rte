@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  Optional,
   forwardRef
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -20,14 +21,42 @@ import {
   type HostUploadAdapter
 } from '@aurora/editor';
 import type { AuroraDocument } from '@aurora/model';
-import { createToolbar, type ToolbarInstance } from '@aurora/ui';
+import { createToolbar, type ToolbarInstance, type EditorMode } from '@aurora/ui';
+import { HtmlAuthoringService } from './html-authoring/authoring.service.js';
+import { AuroraRteToolbarComponent } from './html-authoring/toolbar.component.js';
+import { AuroraHtmlElementPickerComponent } from './html-authoring/element-picker.component.js';
+import { AuroraCommandPaletteComponent } from './html-authoring/command-palette.component.js';
+import { AuroraElementInspectorComponent } from './html-authoring/element-inspector.component.js';
+import { AuroraMobileActionsComponent } from './html-authoring/mobile-actions.component.js';
 
 @Component({
   selector: 'aurora-editor',
+  standalone: true,
+  imports: [
+    AuroraRteToolbarComponent,
+    AuroraHtmlElementPickerComponent,
+    AuroraCommandPaletteComponent,
+    AuroraElementInspectorComponent,
+    AuroraMobileActionsComponent
+  ],
   template: `
     <div class="aurora-angular-container">
-      <div *ngIf="toolbar" #toolbarContainer class="aurora-angular-toolbar"></div>
+      @if (toolbar && !legacyToolbar) {
+        <aurora-rte-toolbar [editor]="editor || undefined"></aurora-rte-toolbar>
+      }
+      @if (toolbar && legacyToolbar) {
+        <div #toolbarContainer class="aurora-angular-toolbar"></div>
+      }
+
       <div #editorMount class="aurora-angular-editor-mount" role="textbox" aria-multiline="true"></div>
+
+      @if (enableMobileActions) {
+        <aurora-mobile-actions></aurora-mobile-actions>
+      }
+
+      <aurora-html-element-picker></aurora-html-element-picker>
+      <aurora-command-palette></aurora-command-palette>
+      <aurora-element-inspector></aurora-element-inspector>
     </div>
   `,
   providers: [
@@ -35,12 +64,16 @@ import { createToolbar, type ToolbarInstance } from '@aurora/ui';
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AuroraEditorComponent),
       multi: true
-    }
+    },
+    HtmlAuthoringService
   ]
 })
 export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() document?: AuroraDocument;
   @Input() toolbar: boolean = true;
+  @Input() legacyToolbar: boolean = false;
+  @Input() mode: EditorMode = 'standard';
+  @Input() enableMobileActions: boolean = false;
   @Input() upload?: HostUploadAdapter;
   @Input() features?: unknown[];
 
@@ -51,10 +84,12 @@ export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAcc
   @ViewChild('editorMount', { static: true }) editorMountRef!: ElementRef<HTMLDivElement>;
   @ViewChild('toolbarContainer', { static: false }) toolbarMountRef?: ElementRef<HTMLDivElement>;
 
-  private editor: AuroraEditor | null = null;
+  public editor: AuroraEditor | null = null;
   private toolbarInstance: ToolbarInstance | null = null;
   private onModelChange: (value: AuroraDocument) => void = () => {};
   private onModelTouched: () => void = () => {};
+
+  constructor(@Optional() public authoringService: HtmlAuthoringService = new HtmlAuthoringService()) {}
 
   ngOnInit() {
     this.editor = createEditor({
@@ -64,7 +99,9 @@ export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAcc
       features: this.features
     });
 
-    if (this.toolbar && this.toolbarMountRef) {
+    this.authoringService.setEditor(this.editor, this.mode);
+
+    if (this.toolbar && this.legacyToolbar && this.toolbarMountRef) {
       this.toolbarInstance = createToolbar({
         editor: this.editor,
         container: this.toolbarMountRef.nativeElement
@@ -131,5 +168,17 @@ export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAcc
 
   focus(): void {
     this.editor?.focus();
+  }
+
+  openElementPicker(): void {
+    this.authoringService.isElementPickerOpen = true;
+  }
+
+  openCommandPalette(): void {
+    this.authoringService.isCommandPaletteOpen = true;
+  }
+
+  inspectElement(element: HTMLElement): void {
+    this.authoringService.inspect(element);
   }
 }

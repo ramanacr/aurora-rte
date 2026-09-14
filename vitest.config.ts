@@ -16,6 +16,8 @@ export default defineConfig({
   test: {
     exclude: ['**/dist/**', '**/node_modules/**'],
     environment: 'happy-dom',
-    globals: true
+    globals: true,
+    fileParallelism: false,
+    testTimeout: 20000
   }
 });

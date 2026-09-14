@@ -4,3 +4,8 @@ export * from './toolbar.js';
 export * from './dialog.js';
 export * from './bubble-menu.js';
 export * from './slash-menu.js';
+export * from './context-menu.js';
+export * from './html-authoring/index.js';
+export * from './source-mode.js';
+export * from './collab-presence.js';
+export * from './review-gutter.js';

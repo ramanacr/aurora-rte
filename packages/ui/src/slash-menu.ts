@@ -63,6 +63,7 @@ export function createSlashMenu(options: SlashMenuOptions): SlashMenuInstance {
   }
 
   function open(query = '') {
+    if (!editor.isEditable()) return;
     const q = query.toLowerCase().trim();
     currentFiltered = q
       ? commands.filter((c) => c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q))
