@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ramanacr.github.io/aurora-rte/sitemap.xml

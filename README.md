@@ -1,18 +1,40 @@
-# Aurora RTE
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/assets/branding/aurora-logo.svg">
+    <img src="public/assets/branding/aurora-logo.svg" alt="Aurora RTE Banner" width="620">
+  </picture>
+</p>
 
-> **Enterprise-Grade Modern Rich-Text & HTML Authoring Engine**  
-> *Framework-agnostic core, native React 19 & Angular 17+ components, Web Component custom element, standalone zero-install CDN bundle, bi-directional HTML source mode, and collaborative review workflows.*
+<p align="center">
+  <strong>Enterprise-Grade Modern Rich-Text &amp; HTML5 Authoring Engine</strong><br>
+  <em>Framework-agnostic core, native React 19 &amp; Angular 17+ components, Custom Elements v1 Web Component, standalone zero-install CDN bundle, bi-directional HTML source mode, and collaborative review workflows.</em>
+</p>
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/ramanacr/aurora-rte/releases)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-7.0%2B-3178c6.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18%20%7C%2019-61dafb.svg)](https://react.dev/)
-[![Angular](https://img.shields.io/badge/Angular-17%20%7C%2018-dd0031.svg)](https://angular.dev/)
-[![Web Component](https://img.shields.io/badge/Custom%20Elements-v1-ff69b4.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
-[![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen.svg)](tests)
-[![WCAG](https://img.shields.io/badge/WCAG-2.1%20AA-purple.svg)](https://www.w3.org/WAI/standards-guidelines/wcag/)
+<p align="center">
+  <a href="https://ramanacr.github.io/aurora-rte/">
+    <img src="https://img.shields.io/badge/🚀_Live_Demo-Interactive_Playground-00F0FF?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Live Demo" />
+  </a>
+  <a href="https://github.com/ramanacr/aurora-rte/packages">
+    <img src="https://img.shields.io/badge/📦_GitHub_Packages-@ramanacr/aurora--*-8B5CF6?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Packages" />
+  </a>
+  <a href="https://github.com/ramanacr/aurora-rte/releases">
+    <img src="https://img.shields.io/badge/🏷️_Release-v0.1.0-FF2E93?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ramanacr/aurora-rte/releases"><img src="https://img.shields.io/badge/version-0.1.0-blue.svg" alt="Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-7.0%2B-3178c6.svg" alt="TypeScript"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18%20%7C%2019-61dafb.svg" alt="React"></a>
+  <a href="https://angular.dev/"><img src="https://img.shields.io/badge/Angular-17%20%7C%2018-dd0031.svg" alt="Angular"></a>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components"><img src="https://img.shields.io/badge/Custom%20Elements-v1-ff69b4.svg" alt="Web Component"></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-81%20passing-brightgreen.svg" alt="Tests"></a>
+  <a href="https://www.w3.org/WAI/standards-guidelines/wcag/"><img src="https://img.shields.io/badge/WCAG-2.1%20AA-purple.svg" alt="WCAG"></a>
+</p>
 
 ---
+
 
 ## Table of Contents
 
