@@ -2,6 +2,7 @@
   "name": "@ramanacr/aurora-web-component",
   "version": "0.1.0",
   "type": "module",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/ramanacr/aurora-rte.git",
