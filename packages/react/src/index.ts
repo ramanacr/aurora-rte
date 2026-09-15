@@ -7,3 +7,4 @@ export {
 } from './editor.js';
 
 export * from './html-authoring/index.js';
+export * from './theme/index.js';

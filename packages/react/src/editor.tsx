@@ -9,7 +9,16 @@ import {
   type CommandName
 } from '@aurora/editor';
 import type { AuroraDocument } from '@aurora/model';
-import { createToolbar, type ToolbarInstance, type EditorMode, type RtePolicy } from '@aurora/ui';
+import {
+  createToolbar,
+  type ToolbarInstance,
+  type EditorMode,
+  type RtePolicy,
+  type ThemeTokens,
+  type ThemePresetName,
+  type ThemeManager,
+  createThemeManager
+} from '@aurora/ui';
 import {
   AuroraProvider,
   AuroraToolbar,
@@ -27,6 +36,9 @@ export interface AuroraEditorProps {
   legacyToolbar?: boolean;
   mode?: EditorMode;
   policy?: RtePolicy;
+  theme?: ThemePresetName | string;
+  tokens?: Partial<ThemeTokens>;
+  autoInherit?: boolean;
   enableAuthoringFeatures?: boolean;
   enableMobileActions?: boolean;
   className?: string;
@@ -76,11 +88,13 @@ export const AuroraEditorComponent = forwardRef<AuroraEditorRef, AuroraEditorPro
       editorOptions
     } = props;
 
+    const rootRef = useRef<HTMLDivElement>(null);
     const editorMountRef = useRef<HTMLDivElement>(null);
     const toolbarMountRef = useRef<HTMLDivElement>(null);
     const [editorInstance, setEditorInstance] = useState<AuroraEditor | null>(null);
     const editorRef = useRef<AuroraEditor | null>(null);
     const toolbarRef = useRef<ToolbarInstance | null>(null);
+    const themeManagerRef = useRef<ThemeManager | null>(null);
 
     useImperativeHandle(ref, () => ({
       getDocument: () => editorRef.current?.getDocument(),
@@ -102,6 +116,15 @@ export const AuroraEditorComponent = forwardRef<AuroraEditorRef, AuroraEditorPro
       editorRef.current = editor;
       setEditorInstance(editor);
 
+      if (rootRef.current) {
+        themeManagerRef.current = createThemeManager({
+          target: rootRef.current,
+          theme: props.theme,
+          tokens: props.tokens,
+          autoInherit: props.autoInherit ?? (props.theme === undefined || props.theme === 'auto')
+        });
+      }
+
       if (toolbar && legacyToolbar && toolbarMountRef.current) {
         toolbarRef.current = createToolbar({
           editor,
@@ -122,14 +145,23 @@ export const AuroraEditorComponent = forwardRef<AuroraEditorRef, AuroraEditorPro
         unsubSelection();
         toolbarRef.current?.destroy();
         toolbarRef.current = null;
+        themeManagerRef.current?.destroy();
+        themeManagerRef.current = null;
         editor.destroy();
         editorRef.current = null;
         setEditorInstance(null);
       };
     }, []);
 
+    useEffect(() => {
+      if (!themeManagerRef.current) return;
+      if (props.theme) themeManagerRef.current.setTheme(props.theme);
+      if (props.tokens) themeManagerRef.current.setTokens(props.tokens);
+      if (typeof props.autoInherit === 'boolean') themeManagerRef.current.setAutoInherit(props.autoInherit);
+    }, [props.theme, props.tokens, props.autoInherit]);
+
     const content = (
-      <div className={`aurora-react-editor-container ${className}`.trim()} style={style}>
+      <div ref={rootRef} className={`aurora-react-editor-container ${className}`.trim()} style={style}>
         {toolbar && legacyToolbar && <div ref={toolbarMountRef} className="aurora-react-toolbar-mount" />}
         {toolbar && !legacyToolbar && <AuroraToolbar />}
         <div ref={editorMountRef} className="aurora-react-editor-mount" role="textbox" aria-multiline="true" />

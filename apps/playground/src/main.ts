@@ -8,9 +8,8 @@ import {
   createPresenceManager,
   createReviewGutter,
   applyTheme,
-  AURORA_BRAND_THEME,
-  LIGHT_THEME,
-  HIGH_CONTRAST_THEME
+  createThemeManager,
+  AURORA_BRAND_THEME
 } from '@aurora/ui';
 import { calculateCounts, defaultSlashCommands, cleanPastedHtml, formatHtml } from '@aurora/features';
 import type { AuroraDocument, JsonPatch } from '@aurora/model';
@@ -230,10 +229,23 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
         <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #25E0C4;"></span>
         <span>Local / Broadcast Ready</span>
       </div>
-      <div style="display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
-        <button id="theme-brand" title="Aurora Brand Preset" style="padding: 6px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 4px; border: none; background: var(--aurora-primary, #28E6F5); color: #040d21; font-weight: 600;">Brand</button>
-        <button id="theme-light" title="Light Preset" style="padding: 6px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 4px; border: none; background: transparent; color: inherit;">Light</button>
-        <button id="theme-contrast" title="High Contrast Preset" style="padding: 6px 10px; font-size: 0.8rem; cursor: pointer; border-radius: 4px; border: none; background: transparent; color: inherit;">Contrast</button>
+      <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--aurora-border, rgba(255,255,255,0.1));">
+        <label for="theme-preset-select" style="font-size: 0.8rem; font-weight: 600; color: var(--aurora-muted-fg, #8ca0c2); white-space: nowrap;">Theme / SaaS:</label>
+        <select id="theme-preset-select" style="background: rgba(0,0,0,0.3); color: var(--aurora-fg, #f0f4f8); border: 1px solid var(--aurora-border, #132a59); border-radius: 4px; padding: 4px 8px; font-size: 0.8rem; cursor: pointer; outline: none;">
+          <option value="auto">Auto-Inherit Host</option>
+          <option value="aurora-dark" selected>Aurora Dark (Default)</option>
+          <option value="aurora-light">Aurora Light</option>
+          <option value="shadcn-dark">Shadcn / Tailwind Dark</option>
+          <option value="shadcn-light">Shadcn / Tailwind Light</option>
+          <option value="linear-dark">Linear Dark</option>
+          <option value="enterprise-slate">Enterprise Slate</option>
+          <option value="material-dark">Material 3 Dark</option>
+          <option value="material-light">Material 3 Light</option>
+          <option value="high-contrast">High Contrast (A11y)</option>
+        </select>
+        <div style="display: flex; align-items: center; gap: 4px;" title="Custom Brand Primary Color">
+          <input type="color" id="theme-brand-color" value="#28E6F5" style="width: 24px; height: 24px; border: none; border-radius: 4px; cursor: pointer; background: transparent; padding: 0;" />
+        </div>
       </div>
     </div>
   `;
@@ -1247,34 +1259,41 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
 
   updateCounts();
 
-  // Theme switch listeners
-  const btnBrand = header.querySelector('#theme-brand') as HTMLButtonElement;
-  const btnLight = header.querySelector('#theme-light') as HTMLButtonElement;
-  const btnContrast = header.querySelector('#theme-contrast') as HTMLButtonElement;
+  // SaaS Theme Manager Integration
+  const themeSelect = header.querySelector('#theme-preset-select') as HTMLSelectElement;
+  const themeColorPicker = header.querySelector('#theme-brand-color') as HTMLInputElement;
 
-  function updateActiveThemeBtn(active: HTMLButtonElement) {
-    [btnBrand, btnLight, btnContrast].forEach((b) => {
-      if (!b) return;
-      b.style.background = 'transparent';
-      b.style.color = 'var(--aurora-fg)';
-      b.style.fontWeight = 'normal';
+  const themeManager = createThemeManager({
+    target: rootElement,
+    theme: 'aurora-dark',
+    onThemeChange: (_name, tokens) => {
+      if (themeColorPicker && tokens.primary) {
+        // Keep picker synced if valid hex
+        if (tokens.primary.startsWith('#') && tokens.primary.length === 7) {
+          themeColorPicker.value = tokens.primary;
+        }
+      }
+    }
+  });
+
+  themeSelect?.addEventListener('change', () => {
+    const selected = themeSelect.value;
+    if (selected === 'auto') {
+      themeManager.setAutoInherit(true);
+      themeManager.setTheme('auto');
+    } else {
+      themeManager.setAutoInherit(false);
+      themeManager.setTheme(selected);
+    }
+  });
+
+  themeColorPicker?.addEventListener('input', (e) => {
+    const newColor = (e.target as HTMLInputElement).value;
+    themeManager.setTokens({
+      primary: newColor,
+      primaryHover: newColor,
+      resizeHandle: newColor
     });
-    active.style.background = 'var(--aurora-primary)';
-    active.style.color = '#040d21';
-    active.style.fontWeight = '700';
-  }
-
-  btnBrand?.addEventListener('click', () => {
-    applyTheme(rootElement, AURORA_BRAND_THEME);
-    updateActiveThemeBtn(btnBrand);
-  });
-  btnLight?.addEventListener('click', () => {
-    applyTheme(rootElement, LIGHT_THEME);
-    updateActiveThemeBtn(btnLight);
-  });
-  btnContrast?.addEventListener('click', () => {
-    applyTheme(rootElement, HIGH_CONTRAST_THEME);
-    updateActiveThemeBtn(btnContrast);
   });
 
   // Connect real-time WebSocket

@@ -732,6 +732,157 @@ el.focus();
 
 ---
 
+## SaaS Product Theming & Design System Integration
+
+Aurora RTE is engineered to seamlessly blend into any host SaaS product environment (e.g., Tailwind CSS, Shadcn UI, Radix UI, Linear, Material Design, Enterprise Slate, or custom corporate design tokens). It offers both **zero-config host token auto-inheritance** and **customizable runtime themes & hooks**.
+
+### 1. Built-in Enterprise Themes
+
+Aurora includes 9 pre-calibrated SaaS themes out of the box:
+- `auto`: Automatically inspects parent and root DOM nodes (`--background`, `--foreground`, `--primary`, `--border`, `--radius`, `fontFamily`) or system color-scheme.
+- `aurora-dark`: High-contrast deep navy cybernetic brand palette (Default).
+- `aurora-light`: Crisp editorial slate light theme.
+- `shadcn-dark`: Zinc / Neutral minimalist dark theme designed for modern Shadcn & Tailwind applications.
+- `shadcn-light`: Off-white clean theme matching Shadcn light mode.
+- `linear-dark`: Deep slate & vibrant violet palette inspired by Linear app.
+- `enterprise-slate`: Professional neutral corporate theme for B2B dashboards.
+- `material-dark` / `material-light`: Google Material Design 3 token-aligned themes.
+- `high-contrast`: WCAG AAA accessible high-contrast theme.
+
+---
+
+### 2. React 19: Theme Provider & Custom Hooks
+
+Wrap your editor or entire application with `<AuroraThemeProvider>` and reactively inspect or update theme tokens using `useAuroraTheme()`:
+
+```tsx
+import React from 'react';
+import { AuroraThemeProvider, useAuroraTheme, AuroraEditor } from '@aurora/react';
+
+function HeaderControls() {
+  const { theme, setTheme, setTokens, isDark } = useAuroraTheme();
+
+  return (
+    <div className="flex gap-2 items-center">
+      <button onClick={() => setTheme(isDark ? 'shadcn-light' : 'shadcn-dark')}>
+        Toggle {isDark ? 'Light' : 'Dark'} Mode
+      </button>
+      <input
+        type="color"
+        onChange={(e) => setTokens({ primary: e.target.value })}
+        title="Custom Brand Accent"
+      />
+    </div>
+  );
+}
+
+export function SaasApp() {
+  return (
+    <AuroraThemeProvider theme="auto" autoInherit={true}>
+      <HeaderControls />
+      {/* AuroraEditor automatically consumes the surrounding theme context */}
+      <AuroraEditor />
+    </AuroraThemeProvider>
+  );
+}
+```
+
+Or pass `theme` and `tokens` directly to `<AuroraEditor>`:
+
+```tsx
+<AuroraEditor
+  theme="shadcn-dark"
+  tokens={{
+    primary: '#10b981', // Custom emerald green brand accent
+    radius: '8px'
+  }}
+  autoInherit={false}
+/>
+```
+
+---
+
+### 3. Angular 17+: Theme Service & Signals
+
+In Angular, theme state is exposed reactively via Angular Signals through `AuroraThemeService`:
+
+```ts
+import { Component, inject } from '@angular/core';
+import { AuroraEditorComponent, AuroraThemeService } from '@aurora/angular';
+
+@Component({
+  selector: 'app-editor-shell',
+  standalone: true,
+  imports: [AuroraEditorComponent],
+  template: `
+    <div class="toolbar-theme">
+      <span>Active Theme: {{ themeService.currentTheme() }}</span>
+      <button (click)="themeService.setTheme('linear-dark')">Linear Theme</button>
+      <button (click)="themeService.setTheme('shadcn-light')">Shadcn Theme</button>
+    </div>
+
+    <aurora-editor
+      [theme]="'auto'"
+      [autoInherit]="true"
+      [tokens]="{ primary: '#6366f1' }">
+    </aurora-editor>
+  `
+})
+export class EditorShellComponent {
+  themeService = inject(AuroraThemeService);
+}
+```
+
+---
+
+### 4. Web Component: Attributes & DOM Methods
+
+`<aurora-editor>` reacts to attribute mutations and provides imperative theme methods:
+
+```html
+<!-- Auto-inherits host CSS variables from parent Tailwind or Shadcn container -->
+<aurora-editor theme="auto" auto-inherit="true"></aurora-editor>
+
+<script>
+  const editor = document.querySelector('aurora-editor');
+
+  // Change preset dynamically
+  editor.setTheme('enterprise-slate');
+
+  // Override specific CSS tokens
+  editor.setTokens({
+    primary: '#0ea5e9',
+    radius: '10px'
+  });
+</script>
+```
+
+---
+
+### 5. Vanilla JS / Core Theme Engine
+
+Direct programmatic access to the token manager and host observer:
+
+```ts
+import { createThemeManager, THEME_PRESETS, applyTheme } from '@aurora/ui';
+
+const themeManager = createThemeManager({
+  target: document.getElementById('editor-container'),
+  theme: 'auto',        // 'auto' or any preset name
+  autoInherit: true,    // Listens to host .dark class / style mutations
+  onThemeChange: (themeName, tokens) => {
+    console.log(`Theme shifted to ${themeName}:`, tokens);
+  }
+});
+
+// Update at runtime:
+themeManager.setTheme('material-dark');
+themeManager.setTokens({ primary: '#ec4899' });
+```
+
+
+---
+
 ## Enterprise Features & Authoring Capabilities
 
 ### W3C Semantic HTML5 Authoring Spec

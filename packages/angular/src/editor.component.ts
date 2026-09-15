@@ -3,9 +3,11 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
   Optional,
   forwardRef
@@ -21,13 +23,14 @@ import {
   type HostUploadAdapter
 } from '@aurora/editor';
 import type { AuroraDocument } from '@aurora/model';
-import { createToolbar, type ToolbarInstance, type EditorMode } from '@aurora/ui';
+import { createToolbar, type ToolbarInstance, type EditorMode, type ThemeTokens } from '@aurora/ui';
 import { HtmlAuthoringService } from './html-authoring/authoring.service.js';
 import { AuroraRteToolbarComponent } from './html-authoring/toolbar.component.js';
 import { AuroraHtmlElementPickerComponent } from './html-authoring/element-picker.component.js';
 import { AuroraCommandPaletteComponent } from './html-authoring/command-palette.component.js';
 import { AuroraElementInspectorComponent } from './html-authoring/element-inspector.component.js';
 import { AuroraMobileActionsComponent } from './html-authoring/mobile-actions.component.js';
+import { AuroraThemeService } from './theme/theme.service.js';
 
 @Component({
   selector: 'aurora-editor',
@@ -65,10 +68,11 @@ import { AuroraMobileActionsComponent } from './html-authoring/mobile-actions.co
       useExisting: forwardRef(() => AuroraEditorComponent),
       multi: true
     },
-    HtmlAuthoringService
+    HtmlAuthoringService,
+    AuroraThemeService
   ]
 })
-export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAccessor {
+export class AuroraEditorComponent implements OnInit, OnChanges, OnDestroy, ControlValueAccessor {
   @Input() document?: AuroraDocument;
   @Input() toolbar: boolean = true;
   @Input() legacyToolbar: boolean = false;
@@ -76,6 +80,9 @@ export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAcc
   @Input() enableMobileActions: boolean = false;
   @Input() upload?: HostUploadAdapter;
   @Input() features?: unknown[];
+  @Input() theme: string = 'auto';
+  @Input() tokens?: Partial<ThemeTokens>;
+  @Input() autoInherit: boolean = true;
 
   @Output() docChange = new EventEmitter<EditorChange>();
   @Output() selectionChange = new EventEmitter<SelectionState>();
@@ -89,9 +96,22 @@ export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAcc
   private onModelChange: (value: AuroraDocument) => void = () => {};
   private onModelTouched: () => void = () => {};
 
-  constructor(@Optional() public authoringService: HtmlAuthoringService = new HtmlAuthoringService()) {}
+  constructor(
+    @Optional() public authoringService: HtmlAuthoringService = new HtmlAuthoringService(),
+    @Optional() public themeService: AuroraThemeService = new AuroraThemeService(),
+    @Optional() private hostEl?: ElementRef<HTMLElement>
+  ) {}
 
   ngOnInit() {
+    const targetEl = this.hostEl?.nativeElement || this.editorMountRef?.nativeElement || (typeof document !== 'undefined' ? document.createElement('div') : null);
+    if (targetEl) {
+      this.themeService.attach(targetEl, {
+        theme: this.theme,
+        tokens: this.tokens,
+        autoInherit: this.autoInherit
+      });
+    }
+
     this.editor = createEditor({
       document: this.document,
       element: this.editorMountRef.nativeElement,
@@ -122,6 +142,18 @@ export class AuroraEditorComponent implements OnInit, OnDestroy, ControlValueAcc
     });
 
     this.editorReady.emit(this.editor);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['theme'] && !changes['theme'].firstChange) {
+      this.themeService.setTheme(this.theme);
+    }
+    if (changes['tokens'] && !changes['tokens'].firstChange && this.tokens) {
+      this.themeService.setTokens(this.tokens);
+    }
+    if (changes['autoInherit'] && !changes['autoInherit'].firstChange) {
+      this.themeService.setAutoInherit(this.autoInherit);
+    }
   }
 
   ngOnDestroy() {

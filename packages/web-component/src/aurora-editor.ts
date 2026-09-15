@@ -1,6 +1,12 @@
 import { createEditor, type AuroraEditor, type CommandName, type ExportRequest } from '@aurora/editor';
 import type { AuroraDocument } from '@aurora/model';
-import { createToolbar } from '@aurora/ui';
+import {
+  createToolbar,
+  createThemeManager,
+  type ThemeManager,
+  type ThemeTokens,
+  type ThemePresetName
+} from '@aurora/ui';
 
 export class AuroraEditorElement extends HTMLElement {
   private editor: AuroraEditor | null = null;
@@ -8,9 +14,27 @@ export class AuroraEditorElement extends HTMLElement {
   private editorMount: HTMLElement | null = null;
   private toolbarMount: HTMLElement | null = null;
   private toolbarInstance: { destroy: () => void } | null = null;
+  private themeManager: ThemeManager | null = null;
 
   static get observedAttributes() {
-    return ['toolbar', 'theme'];
+    return ['toolbar', 'theme', 'preset', 'auto-inherit', 'tokens'];
+  }
+
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+    if (oldValue === newValue) return;
+
+    if (name === 'theme' || name === 'preset') {
+      if (newValue && this.themeManager) {
+        this.themeManager.setTheme(newValue);
+      }
+    } else if (name === 'auto-inherit') {
+      this.themeManager?.setAutoInherit(newValue !== 'false');
+    } else if (name === 'tokens' && newValue) {
+      try {
+        const parsed = JSON.parse(newValue);
+        this.themeManager?.setTokens(parsed);
+      } catch {}
+    }
   }
 
   connectedCallback() {
@@ -18,7 +42,7 @@ export class AuroraEditorElement extends HTMLElement {
 
     this.root = this.attachShadow({ mode: 'open' });
 
-    // Base isolated styling within shadow DOM
+    // Base isolated styling within shadow DOM referencing dynamic CSS variables
     const style = document.createElement('style');
     style.textContent = `
       :host {
@@ -34,6 +58,8 @@ export class AuroraEditorElement extends HTMLElement {
         display: flex;
         flex-direction: column;
         width: 100%;
+        background: var(--aurora-bg, #ffffff);
+        color: var(--aurora-fg, #1e293b);
       }
       .aurora-wc-toolbar {
         border-bottom: 1px solid var(--aurora-border, #cbd5e1);
@@ -44,6 +70,8 @@ export class AuroraEditorElement extends HTMLElement {
         padding: 12px;
         min-height: 150px;
         outline: none;
+        background: var(--aurora-bg, inherit);
+        color: var(--aurora-fg, inherit);
       }
     `;
     this.root.appendChild(style);
@@ -60,6 +88,23 @@ export class AuroraEditorElement extends HTMLElement {
     wrapper.appendChild(this.editorMount);
 
     this.root.appendChild(wrapper);
+
+    // Initialize Theme Manager on the host element
+    const initialTheme = this.getAttribute('theme') || this.getAttribute('preset') || 'auto';
+    let initialTokens: Partial<ThemeTokens> = {};
+    const tokensAttr = this.getAttribute('tokens');
+    if (tokensAttr) {
+      try {
+        initialTokens = JSON.parse(tokensAttr);
+      } catch {}
+    }
+
+    this.themeManager = createThemeManager({
+      target: this,
+      theme: initialTheme,
+      tokens: initialTokens,
+      autoInherit: this.getAttribute('auto-inherit') !== 'false'
+    });
 
     // Initialize Editor
     let initialDoc: AuroraDocument | undefined;
@@ -108,10 +153,37 @@ export class AuroraEditorElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.themeManager?.destroy();
+    this.themeManager = null;
     this.toolbarInstance?.destroy();
     this.editor?.destroy();
     this.editor = null;
     this.root = null;
+  }
+
+  get theme(): string {
+    return this.themeManager ? this.themeManager.getTheme() : (this.getAttribute('theme') || 'auto');
+  }
+
+  set theme(val: string) {
+    this.setAttribute('theme', val);
+    this.themeManager?.setTheme(val);
+  }
+
+  setTheme(theme: ThemePresetName | string): void {
+    this.theme = theme;
+  }
+
+  setTokens(tokens: Partial<ThemeTokens>): void {
+    this.themeManager?.setTokens(tokens);
+  }
+
+  getTokens(): ThemeTokens | undefined {
+    return this.themeManager?.getTokens();
+  }
+
+  setAutoInherit(enabled: boolean): void {
+    this.themeManager?.setAutoInherit(enabled);
   }
 
   getDocument(): AuroraDocument | undefined {
