@@ -1,4 +1,4 @@
-import { EditorState, Transaction, NodeSelection } from 'prosemirror-state';
+import { EditorState, Transaction, NodeSelection, Selection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { history, undo, redo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
@@ -12,7 +12,8 @@ import {
   selectNodeForward,
   toggleMark,
   setBlockType,
-  wrapIn
+  wrapIn,
+  lift
 } from 'prosemirror-commands';
 import { wrapInList } from 'prosemirror-schema-list';
 
@@ -313,6 +314,25 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
       editable: () => isEditable,
       dispatchTransaction(tr) {
         dispatchTransaction(tr, 'user');
+      },
+      handleDOMEvents: {
+        contextmenu(v: EditorView, event: Event) {
+          if (!isEditable) {
+            return false;
+          }
+          const mouseEvent = event as MouseEvent;
+          const pos = v.posAtCoords({ left: mouseEvent.clientX, top: mouseEvent.clientY });
+          if (pos) {
+            const sel = v.state.selection;
+            const targetNode = v.state.doc.nodeAt(pos.pos);
+            if (targetNode && targetNode.type === auroraSchema.nodes.image) {
+              v.dispatch(v.state.tr.setSelection(NodeSelection.create(v.state.doc, pos.pos)));
+            } else if (sel.empty || pos.pos < sel.from || pos.pos > sel.to) {
+              v.dispatch(v.state.tr.setSelection(Selection.near(v.state.doc.resolve(pos.pos))));
+            }
+          }
+          return false;
+        }
       },
       handleClickOn(view, _pos, node, nodePos) {
         if (!isEditable) {
@@ -934,9 +954,22 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
               break;
             }
           }
-          if (tableDepth === -1) return false;
+          let tablePos = tableDepth !== -1 ? $from.before(tableDepth) : -1;
+          if (tablePos === -1) {
+            if (state.selection instanceof NodeSelection && state.selection.node.type === auroraSchema.nodes.table) {
+              tablePos = state.selection.from;
+            } else {
+              state.doc.descendants((node, pos) => {
+                if (tablePos === -1 && node.type === auroraSchema.nodes.table) {
+                  tablePos = pos;
+                  return false;
+                }
+                return true;
+              });
+            }
+          }
+          if (tablePos === -1) return false;
           if (dispatch) {
-            const tablePos = $from.before(tableDepth);
             const tableNode = state.doc.nodeAt(tablePos);
             if (!tableNode) return false;
             const nextAttrs = {
@@ -969,9 +1002,25 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
               break;
             }
           }
-          if (cellDepth === -1) return false;
+          let cellPos = cellDepth !== -1 ? $from.before(cellDepth) : -1;
+          if (cellPos === -1) {
+            if (state.selection instanceof NodeSelection) {
+              const nType = state.selection.node.type;
+              if (nType === auroraSchema.nodes.table_cell || nType === auroraSchema.nodes.table_header) {
+                cellPos = state.selection.from;
+              }
+            } else {
+              state.doc.descendants((node, pos) => {
+                if (cellPos === -1 && (node.type === auroraSchema.nodes.table_cell || node.type === auroraSchema.nodes.table_header)) {
+                  cellPos = pos;
+                  return false;
+                }
+                return true;
+              });
+            }
+          }
+          if (cellPos === -1) return false;
           if (dispatch) {
-            const cellPos = $from.before(cellDepth);
             const cellNode = state.doc.nodeAt(cellPos);
             if (!cellNode) return false;
             const nextAttrs = {
@@ -1091,7 +1140,7 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
 
               row.forEach((cell, cellOffset) => {
                 if (cIdx === actualCol) {
-                  cellPos = offset + cellOffset;
+                  cellPos = offset + 1 + cellOffset;
                   currentCellNode = cell;
                 }
                 cIdx++;
@@ -1148,7 +1197,7 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
             for (let r = 0; r < tableNode.childCount; r++) {
               const row = tableNode.child(r);
               row.forEach((cell, cellOffset) => {
-                const cellPos = offset + cellOffset;
+                const cellPos = offset + 1 + cellOffset;
                 tr = tr.setNodeMarkup(cellPos, undefined, {
                   ...cell.attrs,
                   colwidth: evenWidth
@@ -1269,12 +1318,174 @@ export function createEngineAdapter(options: EngineAdapterOptions): EngineAdapte
 
       case 'clearFormatting': {
         executed = runPMCommand((s, d) => {
-          const { from, to } = s.selection;
+          let tr = s.tr;
+
+          // 1. Direct NodeSelection on an Image
+          if (s.selection instanceof NodeSelection && s.selection.node.type === auroraSchema.nodes.image) {
+            if (d) {
+              const imgPos = s.selection.from;
+              const imgNode = s.selection.node;
+              const resetAttrs = {
+                src: imgNode.attrs.src,
+                alt: imgNode.attrs.alt || '',
+                title: imgNode.attrs.title || '',
+                width: null,
+                height: 'auto',
+                aspectRatio: null,
+                sizingMode: 'responsive',
+                lockAspectRatio: true,
+                objectFit: 'cover',
+                align: 'center',
+                rounded: false,
+                shadow: false,
+                border: false,
+                linkUrl: ''
+              };
+              tr = tr.setNodeMarkup(imgPos, auroraSchema.nodes.image, resetAttrs);
+              d(tr);
+            }
+            return true;
+          }
+
+          // 2. Determine target range for text / blocks / tables / images
+          let clearFrom = s.selection.from;
+          let clearTo = s.selection.to;
+
+          if (s.selection.empty) {
+            const $from = s.selection.$from;
+
+            // Direct check if caret is on an image node
+            if ($from.nodeAfter && $from.nodeAfter.type === auroraSchema.nodes.image) {
+              if (d) {
+                const imgNode = $from.nodeAfter;
+                const resetAttrs = {
+                  src: imgNode.attrs.src,
+                  alt: imgNode.attrs.alt || '',
+                  title: imgNode.attrs.title || '',
+                  width: null,
+                  height: 'auto',
+                  aspectRatio: null,
+                  sizingMode: 'responsive',
+                  lockAspectRatio: true,
+                  objectFit: 'cover',
+                  align: 'center',
+                  rounded: false,
+                  shadow: false,
+                  border: false,
+                  linkUrl: ''
+                };
+                tr = tr.setNodeMarkup($from.pos, auroraSchema.nodes.image, resetAttrs);
+                d(tr);
+              }
+              return true;
+            }
+
+            if ($from.parent.isTextblock) {
+              // Check if cursor is directly inside a marked text node (e.g. bold, link, color)
+              const nodeStart = $from.start();
+              let foundMark = false;
+              $from.parent.forEach((child, offset) => {
+                const childFrom = nodeStart + offset;
+                const childTo = childFrom + child.nodeSize;
+                if ($from.pos >= childFrom && $from.pos <= childTo && child.marks.length > 0) {
+                  clearFrom = childFrom;
+                  clearTo = childTo;
+                  foundMark = true;
+                }
+              });
+
+              // If not inside an isolated mark, expand to the entire parent textblock
+              if (!foundMark) {
+                clearFrom = $from.start();
+                clearTo = $from.end();
+              }
+            }
+          }
+
           if (d) {
-            let tr = s.tr;
-            Object.values(auroraSchema.marks).forEach((markType) => {
-              tr = tr.removeMark(from, to, markType);
+            // A. Remove all inline marks across the target range (bold, italic, color, link, font, etc.)
+            if (clearTo > clearFrom) {
+              Object.values(auroraSchema.marks).forEach((markType) => {
+                tr = tr.removeMark(clearFrom, clearTo, markType);
+              });
+            }
+
+            // B. Clear stored marks (so immediate typing starts plain)
+            tr = tr.setStoredMarks([]);
+
+            // C. Reset block styling, table cell attributes, headings, code blocks, and images
+            const scanTo = Math.max(clearFrom + 1, clearTo);
+            tr.doc.nodesBetween(clearFrom, scanTo, (node, pos) => {
+              // Reset table cells (clear background shading & cell alignment)
+              if (node.type === auroraSchema.nodes.table_cell || node.type === auroraSchema.nodes.table_header) {
+                if (node.attrs.background || node.attrs.align) {
+                  tr = tr.setNodeMarkup(pos, node.type, {
+                    ...node.attrs,
+                    background: null,
+                    align: null
+                  });
+                }
+              }
+
+              // Reset whole table formatting if table root is intersected
+              if (node.type === auroraSchema.nodes.table) {
+                tr = tr.setNodeMarkup(pos, node.type, {
+                  ...node.attrs,
+                  striped: false,
+                  bordered: true,
+                  tableWidth: '100%'
+                });
+              }
+
+              // Reset image attributes if an image falls within the selection
+              if (node.type === auroraSchema.nodes.image) {
+                const resetAttrs = {
+                  src: node.attrs.src,
+                  alt: node.attrs.alt || '',
+                  title: node.attrs.title || '',
+                  width: null,
+                  height: 'auto',
+                  aspectRatio: null,
+                  sizingMode: 'responsive',
+                  lockAspectRatio: true,
+                  objectFit: 'cover',
+                  align: 'center',
+                  rounded: false,
+                  shadow: false,
+                  border: false,
+                  linkUrl: ''
+                };
+                tr = tr.setNodeMarkup(pos, auroraSchema.nodes.image, resetAttrs);
+              }
+
+              // Reset textblocks (convert heading / code_block to paragraph, reset alignment)
+              if (node.isTextblock) {
+                if (node.type === auroraSchema.nodes.heading || node.type === auroraSchema.nodes.code_block) {
+                  tr = tr.setNodeMarkup(pos, auroraSchema.nodes.paragraph, { align: 'left' });
+                } else if (node.attrs && node.attrs.align && node.attrs.align !== 'left') {
+                  tr = tr.setNodeMarkup(pos, node.type, { ...node.attrs, align: 'left' });
+                }
+              }
             });
+
+            // D. Lift out of blockquote or callout wrappers
+            if (s.selection.$from.depth > 1) {
+              for (let depth = s.selection.$from.depth; depth > 0; depth--) {
+                const ancestor = s.selection.$from.node(depth);
+                if (
+                  ancestor.type === auroraSchema.nodes.blockquote ||
+                  ancestor.type === auroraSchema.nodes.callout
+                ) {
+                  try {
+                    lift(s, (liftTr) => {
+                      tr = liftTr;
+                    });
+                  } catch {}
+                  break;
+                }
+              }
+            }
+
             d(tr);
           }
           return true;

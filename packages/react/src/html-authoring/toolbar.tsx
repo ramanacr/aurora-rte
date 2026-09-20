@@ -13,12 +13,85 @@ const ALL_COMMANDS: ResponsiveCommandMetadata[] = [
   { id: 'code', priority: 4, estimatedWidth: 40, preferredSurface: 'toolbar' }
 ];
 
+const REACT_TOOLBAR_STYLES = `
+  .aurora-react-toolbar-wrapper {
+    display: flex;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .aurora-react-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    width: 100%;
+    background: var(--aurora-muted-bg, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--aurora-border, #132a59);
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+  .aurora-tb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--aurora-fg, #f0f4f8);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    box-sizing: border-box;
+  }
+  .aurora-tb-btn:hover {
+    background: rgba(40, 230, 245, 0.12);
+    border-color: var(--aurora-border, rgba(40, 230, 245, 0.3));
+    color: var(--aurora-primary, #28E6F5);
+  }
+  .aurora-tb-btn:active {
+    transform: scale(0.96);
+  }
+  .aurora-tb-btn.is-active {
+    background: var(--aurora-primary, #28E6F5);
+    color: #040d21;
+    border-color: var(--aurora-primary, #28E6F5);
+  }
+  .aurora-tb-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--aurora-border, #132a59);
+    margin: 0 4px;
+  }
+  .aurora-tb-picker-btn {
+    color: var(--aurora-primary, #28E6F5);
+    border-color: var(--aurora-border, #132a59);
+    background: rgba(40, 230, 245, 0.08);
+  }
+`;
+
+function ensureReactToolbarStyles() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('aurora-react-toolbar-styles')) return;
+
+  const styleEl = document.createElement('style');
+  styleEl.id = 'aurora-react-toolbar-styles';
+  styleEl.textContent = REACT_TOOLBAR_STYLES;
+  document.head.appendChild(styleEl);
+}
+
 export interface AuroraToolbarProps {
   className?: string;
   style?: CSSProperties;
 }
 
 export function AuroraToolbar({ className = '', style }: AuroraToolbarProps) {
+  ensureReactToolbarStyles();
   const { editor, setElementPickerOpen, setCommandPaletteOpen } = useAurora();
   const containerRef = useRef<HTMLDivElement>(null);
   const [breakpoint, setBreakpoint] = useState<ResponsiveBreakpoint>('standard');

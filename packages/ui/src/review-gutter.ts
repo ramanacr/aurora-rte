@@ -50,15 +50,16 @@ export function createReviewGutter(options: ReviewGutterOptions): ReviewGutterCo
   gutter.style.cssText = `
     display: flex;
     flex-direction: column;
-    width: 320px;
-    background: #040d21;
-    border-left: 1px solid #132a59;
+    width: 100%;
+    background: var(--aurora-bg, #040d21);
+    border-left: 1px solid var(--aurora-border, #132a59);
     padding: 16px;
     gap: 16px;
     overflow-y: auto;
     max-height: 100%;
     box-sizing: border-box;
-    font-family: system-ui, sans-serif;
+    font-family: var(--aurora-font-family, system-ui, sans-serif);
+    color: var(--aurora-fg, #f0f4f8);
   `;
 
   const header = document.createElement('div');
@@ -66,13 +67,13 @@ export function createReviewGutter(options: ReviewGutterOptions): ReviewGutterCo
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #132a59;
+    border-bottom: 1px solid var(--aurora-border, #132a59);
     padding-bottom: 8px;
   `;
   header.innerHTML = `
     <div style="display: flex; align-items: center; gap: 6px;">
-      <span style="font-size: 0.9rem; font-weight: 700; color: #28E6F5;">Review & Comments</span>
-      <span id="review-count-badge" style="font-size: 0.72rem; padding: 2px 6px; border-radius: 10px; background: rgba(40,230,245,0.15); color: #28E6F5;">0</span>
+      <span style="font-size: 0.9rem; font-weight: 700; color: var(--aurora-primary, #28E6F5);">Review & Comments</span>
+      <span id="review-count-badge" style="font-size: 0.72rem; padding: 2px 6px; border-radius: 10px; background: rgba(40,230,245,0.15); color: var(--aurora-primary, #28E6F5); font-weight: 600;">0</span>
     </div>
   `;
   gutter.appendChild(header);
@@ -96,7 +97,7 @@ export function createReviewGutter(options: ReviewGutterOptions): ReviewGutterCo
       empty.style.cssText = `
         text-align: center;
         padding: 24px 12px;
-        color: #5d759d;
+        color: var(--aurora-muted-fg, #8ca0c2);
         font-size: 0.82rem;
       `;
       empty.textContent = 'No active suggestions or comments. Select text in the editor to comment or suggest changes.';
@@ -109,7 +110,7 @@ export function createReviewGutter(options: ReviewGutterOptions): ReviewGutterCo
       const card = document.createElement('div');
       card.className = 'aurora-suggestion-card';
       card.style.cssText = `
-        background: #081938;
+        background: var(--aurora-muted-bg, rgba(255,255,255,0.04));
         border: 1px solid ${s.mode === 'insert' ? '#00FF88' : '#FF2E93'};
         border-radius: 8px;
         padding: 12px;
@@ -117,15 +118,16 @@ export function createReviewGutter(options: ReviewGutterOptions): ReviewGutterCo
         display: flex;
         flex-direction: column;
         gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       `;
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600; color: #e2ecf9;">${s.author.name}</span>
+          <span style="font-weight: 600; color: var(--aurora-fg, #f0f4f8);">${s.author.name}</span>
           <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: ${s.mode === 'insert' ? 'rgba(0,255,136,0.15)' : 'rgba(255,46,147,0.15)'}; color: ${s.mode === 'insert' ? '#00FF88' : '#FF2E93'}; font-weight: 600;">
             ${s.mode === 'insert' ? '+ Added' : '- Deleted'}
           </span>
         </div>
-        <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; word-break: break-all;">
+        <div style="background: var(--aurora-bg, rgba(0,0,0,0.25)); border: 1px solid var(--aurora-border, rgba(255,255,255,0.08)); padding: 8px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.8rem; word-break: break-all;">
           ${s.mode === 'insert' ? `<span style="color: #00FF88; text-decoration: underline;">${s.suggestedText}</span>` : `<span style="color: #FF2E93; text-decoration: line-through;">${s.originalText}</span>`}
         </div>
         <div style="display: flex; gap: 8px; margin-top: 4px;">
@@ -154,24 +156,25 @@ export function createReviewGutter(options: ReviewGutterOptions): ReviewGutterCo
       const card = document.createElement('div');
       card.className = 'aurora-comment-card';
       card.style.cssText = `
-        background: #081938;
-        border: 1px solid #1f3b73;
+        background: var(--aurora-muted-bg, rgba(255,255,255,0.04));
+        border: 1px solid var(--aurora-border, #132a59);
         border-radius: 8px;
         padding: 12px;
         font-size: 0.82rem;
         display: flex;
         flex-direction: column;
         gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       `;
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600; color: #28E6F5;">${c.author.name}</span>
-          <span style="font-size: 0.7rem; color: #5d759d;">${new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <span style="font-weight: 600; color: var(--aurora-primary, #28E6F5);">${c.author.name}</span>
+          <span style="font-size: 0.7rem; color: var(--aurora-muted-fg, #8ca0c2);">${new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
-        ${c.anchor?.snippet ? `<div style="padding: 4px 8px; border-left: 2px solid #28E6F5; background: rgba(40,230,245,0.05); font-style: italic; color: #a4b8d6; font-size: 0.78rem;">"${c.anchor.snippet}"</div>` : ''}
-        <div style="color: #e2ecf9; line-height: 1.4;">${c.text}</div>
+        ${c.anchor?.snippet ? `<div style="padding: 4px 8px; border-left: 2px solid var(--aurora-primary, #28E6F5); background: rgba(40,230,245,0.08); font-style: italic; color: var(--aurora-fg, #f0f4f8); font-size: 0.78rem;">"${c.anchor.snippet}"</div>` : ''}
+        <div style="color: var(--aurora-fg, #f0f4f8); line-height: 1.4;">${c.text}</div>
         <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
-          <button class="resolve-btn" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer; border-radius: 4px; border: 1px solid #1f3b73; background: transparent; color: #25E0C4;">Resolve</button>
+          <button class="resolve-btn" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer; border-radius: 4px; border: 1px solid var(--aurora-border, #132a59); background: transparent; color: var(--aurora-secondary, #25E0C4); font-weight: 600;">Resolve</button>
         </div>
       `;
 

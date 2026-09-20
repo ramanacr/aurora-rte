@@ -71,22 +71,22 @@ export function ReactEditorApp() {
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
-        background: '#040d21',
+        background: 'var(--aurora-bg, #040d21)',
         padding: '16px',
         borderRadius: '8px',
-        border: '1px solid #132a59'
+        border: '1px solid var(--aurora-border, #132a59)'
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #132a59', paddingBottom: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--aurora-border, #132a59)', paddingBottom: '10px' }}>
         <div>
-          <h3 style={{ margin: 0, color: '#00F0FF', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ margin: 0, color: 'var(--aurora-primary, #00F0FF)', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>⚛️</span> React 19 Native Integration
           </h3>
-          <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: '#8ca0c2' }}>
+          <p style={{ margin: '3px 0 0 0', fontSize: '0.82rem', color: 'var(--aurora-muted-fg, #8ca0c2)' }}>
             Full reactive architecture with AuroraProvider, useRteContext, useHtmlRegistry, and integrated Inspector.
           </p>
         </div>
-        <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,240,255,0.1)', color: '#00F0FF', border: '1px solid rgba(0,240,255,0.3)' }}>
+        <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,240,255,0.1)', color: 'var(--aurora-primary, #00F0FF)', border: '1px solid rgba(0,240,255,0.3)' }}>
           React v19.3.0
         </span>
       </div>
@@ -97,9 +97,9 @@ export function ReactEditorApp() {
           style={{
             padding: '6px 10px',
             fontSize: '0.8rem',
-            background: 'rgba(255,255,255,0.05)',
-            color: '#f0f4f8',
-            border: '1px solid #132a59',
+            background: 'var(--aurora-muted-bg, rgba(255,255,255,0.05))',
+            color: 'var(--aurora-fg, #f0f4f8)',
+            border: '1px solid var(--aurora-border, #132a59)',
             borderRadius: '4px',
             cursor: 'pointer'
           }}
@@ -112,9 +112,9 @@ export function ReactEditorApp() {
           style={{
             padding: '6px 10px',
             fontSize: '0.8rem',
-            background: 'rgba(255,255,255,0.05)',
-            color: '#f0f4f8',
-            border: '1px solid #132a59',
+            background: 'var(--aurora-muted-bg, rgba(255,255,255,0.05))',
+            color: 'var(--aurora-fg, #f0f4f8)',
+            border: '1px solid var(--aurora-border, #132a59)',
             borderRadius: '4px',
             cursor: 'pointer'
           }}
@@ -127,9 +127,9 @@ export function ReactEditorApp() {
           style={{
             padding: '6px 10px',
             fontSize: '0.8rem',
-            background: 'rgba(255,255,255,0.05)',
-            color: '#f0f4f8',
-            border: '1px solid #132a59',
+            background: 'var(--aurora-muted-bg, rgba(255,255,255,0.05))',
+            color: 'var(--aurora-fg, #f0f4f8)',
+            border: '1px solid var(--aurora-border, #132a59)',
             borderRadius: '4px',
             cursor: 'pointer'
           }}
@@ -145,10 +145,10 @@ export function ReactEditorApp() {
         toolbar={true}
         style={{
           minHeight: '400px',
-          border: '1px solid #132a59',
+          border: '1px solid var(--aurora-border, #132a59)',
           borderRadius: '6px',
-          background: '#020814',
-          color: '#f0f4f8',
+          background: 'var(--aurora-bg, #020814)',
+          color: 'var(--aurora-fg, #f0f4f8)',
           padding: '16px'
         }}
       />

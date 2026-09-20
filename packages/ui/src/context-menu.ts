@@ -29,18 +29,21 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     position: fixed;
     display: none;
     z-index: 9998;
-    background: var(--aurora-bg, #040d21);
-    color: var(--aurora-fg, #f0f6fc);
-    border: 1px solid var(--aurora-border, #1a3366);
+    background: var(--aurora-muted-bg, #24292c);
+    color: var(--aurora-fg, #f1f4ef);
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 8px;
-    padding: 4px 6px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-    font-family: var(--aurora-font-family, system-ui, sans-serif);
+    padding: 5px 8px;
+    box-shadow: 0 12px 32px -4px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06);
+    font-family: var(--aurora-font-family, Inter, system-ui, sans-serif);
     font-size: 13px;
     align-items: center;
     gap: 4px;
-    transition: opacity 0.1s ease;
+    max-width: min(640px, calc(100vw - 32px));
+    flex-wrap: wrap;
+    transition: opacity 0.15s ease;
     user-select: none;
+    backdrop-filter: blur(10px);
   `;
   wrapper.appendChild(floatingBar);
 
@@ -52,16 +55,19 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     position: fixed;
     display: none;
     z-index: 9999;
-    background: var(--aurora-bg, #040d21);
-    color: var(--aurora-fg, #f0f6fc);
-    border: 1px solid var(--aurora-border, #1a3366);
+    background: var(--aurora-muted-bg, #24292c);
+    color: var(--aurora-fg, #f1f4ef);
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 8px;
     padding: 6px;
-    min-width: 190px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    font-family: var(--aurora-font-family, system-ui, sans-serif);
+    min-width: 210px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    box-shadow: 0 16px 40px -4px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.07);
+    font-family: var(--aurora-font-family, Inter, system-ui, sans-serif);
     font-size: 13px;
     user-select: none;
+    backdrop-filter: blur(10px);
   `;
   wrapper.appendChild(rightClickMenu);
 
@@ -75,11 +81,11 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     z-index: 9997;
     width: 14px;
     height: 14px;
-    background: var(--aurora-primary, #28E6F5);
-    border: 2px solid #040d21;
+    background: var(--aurora-primary, #b7ff3c);
+    border: 2px solid #171a1c;
     border-radius: 50%;
     cursor: nwse-resize;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(183, 255, 60, 0.75);
     user-select: none;
     touch-action: none;
   `;
@@ -94,12 +100,12 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     display: none;
     z-index: 9997;
     width: 6px;
-    background: var(--aurora-primary, #28E6F5);
+    background: var(--aurora-primary, #b7ff3c);
     border-radius: 3px;
     cursor: col-resize;
     user-select: none;
     touch-action: none;
-    box-shadow: 0 0 8px rgba(40, 230, 245, 0.7);
+    box-shadow: 0 0 8px rgba(183, 255, 60, 0.7);
     opacity: 0.85;
     transition: opacity 0.15s ease;
   `;
@@ -114,12 +120,12 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     display: none;
     z-index: 9997;
     height: 6px;
-    background: var(--aurora-secondary, #25E0C4);
+    background: var(--aurora-secondary, #68e875);
     border-radius: 3px;
     cursor: row-resize;
     user-select: none;
     touch-action: none;
-    box-shadow: 0 0 8px rgba(37, 224, 196, 0.7);
+    box-shadow: 0 0 8px rgba(104, 232, 117, 0.7);
     opacity: 0.85;
     transition: opacity 0.15s ease;
   `;
@@ -135,13 +141,13 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     position: fixed;
     display: none;
     z-index: 9996;
-    background: var(--aurora-bg, #040d21);
-    color: var(--aurora-fg, #f0f6fc);
-    border: 1px solid var(--aurora-border, #1a3366);
+    background: var(--aurora-muted-bg, #24292c);
+    color: var(--aurora-fg, #f1f4ef);
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 20px;
     padding: 4px 8px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-    font-family: var(--aurora-font-family, system-ui, sans-serif);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    font-family: var(--aurora-font-family, Inter, system-ui, sans-serif);
     font-size: 12px;
     align-items: center;
     gap: 6px;
@@ -165,15 +171,15 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     padding: 4px 6px;
     font-size: 14px;
     cursor: pointer;
-    color: var(--aurora-primary, #28E6F5);
+    color: var(--aurora-primary, #b7ff3c);
     transition: all 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   `;
   viewerExpandBtn.addEventListener('mouseenter', () => {
-    viewerExpandBtn.style.background = 'rgba(40, 230, 245, 0.15)';
-    viewerExpandBtn.style.borderColor = 'rgba(40, 230, 245, 0.3)';
+    viewerExpandBtn.style.background = 'rgba(0, 229, 255, 0.15)';
+    viewerExpandBtn.style.borderColor = 'rgba(0, 229, 255, 0.35)';
   });
   viewerExpandBtn.addEventListener('mouseleave', () => {
     viewerExpandBtn.style.background = 'transparent';
@@ -187,7 +193,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
   viewerFloatingBar.appendChild(viewerExpandBtn);
 
   const viewerDivider = document.createElement('div');
-  viewerDivider.style.cssText = 'width: 1px; height: 16px; background: var(--aurora-border, #1a3366);';
+  viewerDivider.style.cssText = 'width: 1px; height: 16px; background: var(--aurora-border, #1e293b);';
   viewerFloatingBar.appendChild(viewerDivider);
 
   const viewerFullViewBtn = document.createElement('button');
@@ -203,15 +209,15 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     padding: 4px 6px;
     font-size: 14px;
     cursor: pointer;
-    color: var(--aurora-secondary, #25E0C4);
+    color: var(--aurora-secondary, #10B981);
     transition: all 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   `;
   viewerFullViewBtn.addEventListener('mouseenter', () => {
-    viewerFullViewBtn.style.background = 'rgba(37, 224, 196, 0.15)';
-    viewerFullViewBtn.style.borderColor = 'rgba(37, 224, 196, 0.3)';
+    viewerFullViewBtn.style.background = 'rgba(16, 185, 129, 0.15)';
+    viewerFullViewBtn.style.borderColor = 'rgba(16, 185, 129, 0.35)';
   });
   viewerFullViewBtn.addEventListener('mouseleave', () => {
     viewerFullViewBtn.style.background = 'transparent';
@@ -243,17 +249,18 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       align-items: center;
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 5px;
+      border-radius: 6px;
       padding: 4px 8px;
       font-size: 12px;
+      font-weight: 500;
       cursor: pointer;
-      color: ${isDanger ? '#ff6b6b' : 'var(--aurora-fg, #f0f6fc)'};
+      color: ${isDanger ? '#f87171' : 'var(--aurora-fg, #f8fafc)'};
       white-space: nowrap;
-      transition: background 0.15s, border-color 0.15s;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
     `;
     btn.addEventListener('mouseenter', () => {
-      btn.style.background = isDanger ? 'rgba(255, 107, 107, 0.15)' : 'var(--aurora-muted-bg, rgba(255,255,255,0.1))';
-      btn.style.borderColor = isDanger ? 'rgba(255, 107, 107, 0.3)' : 'var(--aurora-border, #1a3366)';
+      btn.style.background = isDanger ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.08)';
+      btn.style.borderColor = isDanger ? 'rgba(239, 68, 68, 0.35)' : 'var(--aurora-border, #1e293b)';
     });
     btn.addEventListener('mouseleave', () => {
       btn.style.background = 'transparent';
@@ -270,7 +277,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
 
   function createDivider() {
     const d = document.createElement('div');
-    d.style.cssText = 'width: 1px; height: 18px; background: var(--aurora-border, #1a3366); margin: 0 3px;';
+    d.style.cssText = 'width: 1px; height: 18px; background: var(--aurora-border, #1e293b); margin: 0 3px;';
     return d;
   }
 
@@ -326,7 +333,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     const isStriped = tableEl.getAttribute('data-striped') === 'true';
 
     const badge = document.createElement('span');
-    badge.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--aurora-primary, #28E6F5); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.5px;';
+    badge.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--aurora-primary, #00E5FF); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.5px;';
     badge.textContent = 'Table';
     floatingBar.appendChild(badge);
     floatingBar.appendChild(createDivider());
@@ -395,6 +402,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
         const nextWidth = currentWidth === '100%' ? 'auto' : '100%';
         editor.execute('updateTable', { tableWidth: nextWidth });
         tableEl.style.width = nextWidth;
+        tableEl.style.tableLayout = nextWidth === 'auto' ? 'auto' : 'fixed';
         tableEl.setAttribute('data-table-width', nextWidth);
         renderTableToolbar(tableOrCell);
       }
@@ -414,8 +422,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       }
     );
     if (isStriped) {
-      stripedBtn.style.background = 'rgba(40, 230, 245, 0.2)';
-      stripedBtn.style.borderColor = 'rgba(40, 230, 245, 0.4)';
+      stripedBtn.style.background = 'rgba(0, 229, 255, 0.2)';
+      stripedBtn.style.borderColor = 'rgba(0, 229, 255, 0.4)';
     }
     floatingBar.appendChild(stripedBtn);
 
@@ -432,8 +440,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       }
     );
     if (isBordered) {
-      borderedBtn.style.background = 'rgba(40, 230, 245, 0.2)';
-      borderedBtn.style.borderColor = 'rgba(40, 230, 245, 0.4)';
+      borderedBtn.style.background = 'rgba(0, 229, 255, 0.2)';
+      borderedBtn.style.borderColor = 'rgba(0, 229, 255, 0.4)';
     }
     floatingBar.appendChild(borderedBtn);
 
@@ -445,7 +453,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       '🎨',
       'Quick cell background shading',
       () => {
-        const nextColor = currentCell?.style.backgroundColor ? null : 'rgba(40, 230, 245, 0.15)';
+        const nextColor = currentCell?.style.backgroundColor ? null : 'rgba(0, 229, 255, 0.15)';
         editor.execute('updateTableCell', { background: nextColor });
         if (currentCell) {
           currentCell.style.backgroundColor = nextColor || '';
@@ -650,7 +658,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     floatingBar.innerHTML = '';
 
     const badge = document.createElement('span');
-    badge.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--aurora-secondary, #25E0C4); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.5px;';
+    badge.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--aurora-secondary, #10B981); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.5px;';
     badge.textContent = 'Image';
     floatingBar.appendChild(badge);
     floatingBar.appendChild(createDivider());
@@ -698,7 +706,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       }
     );
     modeBtn.style.background = 'rgba(255,255,255,0.06)';
-    modeBtn.style.borderColor = 'var(--aurora-border, #1a3366)';
+    modeBtn.style.borderColor = 'var(--aurora-border, #1e293b)';
     floatingBar.appendChild(modeBtn);
 
     floatingBar.appendChild(createDivider());
@@ -715,8 +723,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
         renderImageToolbar(img);
       });
       if (isCurrent) {
-        sizeBtn.style.background = 'var(--aurora-primary, #28E6F5)';
-        sizeBtn.style.color = '#040d21';
+        sizeBtn.style.background = 'var(--aurora-primary, #00E5FF)';
+        sizeBtn.style.color = '#0a0f1d';
         sizeBtn.style.fontWeight = '700';
       }
       floatingBar.appendChild(sizeBtn);
@@ -740,8 +748,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       }
     );
     if (currentRatio && currentRatio !== 'auto' && currentRatio !== 'none') {
-      ratioBtn.style.background = 'rgba(40, 230, 245, 0.2)';
-      ratioBtn.style.borderColor = 'var(--aurora-primary, #28E6F5)';
+      ratioBtn.style.background = 'rgba(0, 229, 255, 0.2)';
+      ratioBtn.style.borderColor = 'var(--aurora-primary, #00E5FF)';
     }
     floatingBar.appendChild(ratioBtn);
 
@@ -774,8 +782,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
         renderImageToolbar(img);
       });
       if (isCurrent) {
-        alBtn.style.background = 'var(--aurora-secondary, #25E0C4)';
-        alBtn.style.color = '#040d21';
+        alBtn.style.background = 'var(--aurora-secondary, #10B981)';
+        alBtn.style.color = '#0a0f1d';
       }
       floatingBar.appendChild(alBtn);
     });
@@ -791,8 +799,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       renderImageToolbar(img);
     });
     if (isRounded) {
-      roundBtn.style.background = 'rgba(40, 230, 245, 0.2)';
-      roundBtn.style.borderColor = 'var(--aurora-primary, #28E6F5)';
+      roundBtn.style.background = 'rgba(0, 229, 255, 0.2)';
+      roundBtn.style.borderColor = 'var(--aurora-primary, #00E5FF)';
     }
     floatingBar.appendChild(roundBtn);
 
@@ -804,8 +812,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       renderImageToolbar(img);
     });
     if (isShadow) {
-      shadowBtn.style.background = 'rgba(40, 230, 245, 0.2)';
-      shadowBtn.style.borderColor = 'var(--aurora-primary, #28E6F5)';
+      shadowBtn.style.background = 'rgba(0, 229, 255, 0.2)';
+      shadowBtn.style.borderColor = 'var(--aurora-primary, #00E5FF)';
     }
     floatingBar.appendChild(shadowBtn);
 
@@ -859,7 +867,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     floatingBar.innerHTML = '';
 
     const badge = document.createElement('span');
-    badge.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--aurora-primary, #28E6F5); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.5px;';
+    badge.style.cssText = 'font-size: 11px; font-weight: 700; color: var(--aurora-primary, #b7ff3c); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.5px;';
     badge.textContent = 'Link';
     floatingBar.appendChild(badge);
 
@@ -874,7 +882,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
     linkDisplay.rel = 'noopener noreferrer';
     linkDisplay.textContent = href.length > 28 ? href.slice(0, 25) + '...' : href;
     linkDisplay.title = href;
-    linkDisplay.style.cssText = 'color: var(--aurora-primary, #28E6F5); text-decoration: underline; font-size: 12px; margin: 0 4px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+    linkDisplay.style.cssText = 'color: var(--aurora-primary, #b7ff3c); text-decoration: underline; font-size: 12px; margin: 0 4px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
     floatingBar.appendChild(linkDisplay);
     floatingBar.appendChild(createDivider());
 
@@ -915,13 +923,13 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       padding: 6px 10px;
       border-radius: 5px;
       cursor: pointer;
-      color: ${isDanger ? '#ff6b6b' : 'var(--aurora-fg, #f0f6fc)'};
+      color: ${isDanger ? '#ff6577' : 'var(--aurora-fg, #f1f4ef)'};
       font-size: 13px;
       transition: background 0.12s;
     `;
     item.innerHTML = `<span style="width: 16px; text-align: center;">${icon}</span><span>${label}</span>`;
     item.addEventListener('mouseenter', () => {
-      item.style.background = isDanger ? 'rgba(255, 107, 107, 0.15)' : 'var(--aurora-muted-bg, rgba(255,255,255,0.08))';
+      item.style.background = isDanger ? 'rgba(255, 101, 119, 0.15)' : 'var(--aurora-muted-bg, rgba(255,255,255,0.08))';
     });
     item.addEventListener('mouseleave', () => {
       item.style.background = 'transparent';
@@ -930,27 +938,28 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       e.stopPropagation();
       e.preventDefault();
       hideRightClickMenu();
-      onClick();
       editor.focus();
+      onClick();
     });
     return item;
   }
 
   function createMenuHeader(title: string) {
     const h = document.createElement('div');
-    h.style.cssText = 'padding: 4px 10px 2px; font-size: 11px; font-weight: 700; color: var(--aurora-muted-fg, #8ca0c2); text-transform: uppercase; letter-spacing: 0.5px;';
+    h.style.cssText = 'padding: 4px 10px 2px; font-size: 11px; font-weight: 700; color: var(--aurora-muted-fg, #aab2b0); text-transform: uppercase; letter-spacing: 0.5px;';
     h.textContent = title;
     return h;
   }
 
   function createMenuDivider() {
     const d = document.createElement('div');
-    d.style.cssText = 'height: 1px; background: var(--aurora-border, #1a3366); margin: 4px 0;';
+    d.style.cssText = 'height: 1px; background: var(--aurora-border, #1e293b); margin: 4px 0;';
     return d;
   }
 
   function openRightClickMenu(e: MouseEvent, targetEl: HTMLElement) {
     e.preventDefault();
+    hideFloatingBar();
     rightClickMenu.innerHTML = '';
 
     const tableCell = targetEl.closest('td, th, table') as HTMLElement | null;
@@ -964,8 +973,9 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       hasCustomSection = true;
       const tableEl = (tableCell.closest('table') || tableCell) as HTMLTableElement;
       const currentCell = tableCell.closest('td, th') as HTMLTableCellElement | null;
-      const isStriped = tableEl.getAttribute('data-striped') === 'true';
-      const isBordered = tableEl.getAttribute('data-bordered') !== 'false';
+      const curRow = currentCell?.closest('tr') as HTMLTableRowElement | null;
+      const isStriped = tableEl.getAttribute('data-striped') === 'true' || tableEl.classList.contains('aurora-table-striped');
+      const isBordered = tableEl.getAttribute('data-bordered') !== 'false' && !tableEl.classList.contains('aurora-table-borderless');
       const currentWidth = tableEl.getAttribute('data-table-width') || tableEl.style.width || '100%';
 
       rightClickMenu.appendChild(createMenuHeader('Table Structure & Sizing'));
@@ -973,10 +983,14 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       rightClickMenu.appendChild(createMenuItem('Insert Row Below', '⬇️', () => editor.execute('addTableRowBelow')));
       rightClickMenu.appendChild(createMenuItem('Delete Row', '✕', () => editor.execute('deleteTableRow'), true));
       rightClickMenu.appendChild(createMenuItem('Set Row Height...', '📐', () => {
-        const curRow = currentCell?.closest('tr');
         const cur = curRow?.getAttribute('data-height') || curRow?.style.height || 'auto';
         const h = window.prompt('Enter row height (e.g. 45px, 60px, auto):', cur);
-        if (h !== null) editor.execute('setTableRowHeight', { height: h.trim() === 'auto' ? null : h.trim() });
+        if (h !== null) {
+          const rowIdx = curRow ? Array.from(curRow.parentElement?.children || []).indexOf(curRow) : undefined;
+          const parsedH = h.trim() === 'auto' ? null : h.trim();
+          editor.execute('setTableRowHeight', { rowIndex: rowIdx !== undefined && rowIdx >= 0 ? rowIdx : undefined, height: parsedH });
+          if (curRow) curRow.style.height = parsedH || '';
+        }
       }));
       rightClickMenu.appendChild(createMenuDivider());
       rightClickMenu.appendChild(createMenuItem('Insert Column Before', '⬅️', () => editor.execute('addTableColBefore')));
@@ -985,7 +999,12 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       rightClickMenu.appendChild(createMenuItem('Set Column Width...', '📏', () => {
         const cur = currentCell?.getAttribute('data-colwidth') || currentCell?.style.width || 'auto';
         const w = window.prompt('Enter column width (e.g. 150px, 200px, auto):', cur);
-        if (w !== null) editor.execute('setTableColWidth', { width: w.trim() === 'auto' ? null : w.trim() });
+        if (w !== null) {
+          const colIdx = currentCell ? Array.from(currentCell.parentElement?.children || []).indexOf(currentCell) : undefined;
+          const parsedW = w.trim() === 'auto' ? null : w.trim();
+          editor.execute('setTableColWidth', { colIndex: colIdx !== undefined && colIdx >= 0 ? colIdx : undefined, width: parsedW });
+          if (currentCell) currentCell.style.width = parsedW || '';
+        }
       }));
       rightClickMenu.appendChild(createMenuItem('Distribute Columns Evenly', '↔️', () => editor.execute('distributeTableCols')));
 
@@ -998,6 +1017,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
           const nw = currentWidth === '100%' ? 'auto' : '100%';
           editor.execute('updateTable', { tableWidth: nw });
           tableEl.style.width = nw;
+          tableEl.style.tableLayout = nw === 'auto' ? 'auto' : 'fixed';
           tableEl.setAttribute('data-table-width', nw);
         }
       ));
@@ -1025,8 +1045,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       rightClickMenu.appendChild(createMenuDivider());
       rightClickMenu.appendChild(createMenuHeader('Cell Shading'));
       const shades = [
-        { label: 'Blue Highlight', color: 'rgba(40, 230, 245, 0.15)' },
-        { label: 'Green Highlight', color: 'rgba(37, 224, 196, 0.15)' },
+        { label: 'Cyan Highlight', color: 'rgba(0, 229, 255, 0.15)' },
+        { label: 'Emerald Highlight', color: 'rgba(16, 185, 129, 0.15)' },
         { label: 'Purple Highlight', color: 'rgba(117, 73, 255, 0.18)' },
         { label: 'Clear Shading', color: null }
       ];
@@ -1042,6 +1062,14 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       });
 
       rightClickMenu.appendChild(createMenuDivider());
+      rightClickMenu.appendChild(createMenuItem('Clear Table & Cell Formatting', '🧹', () => {
+        editor.execute('clearFormatting');
+        if (currentCell) {
+          currentCell.style.backgroundColor = '';
+          currentCell.removeAttribute('data-background');
+          currentCell.removeAttribute('data-shading');
+        }
+      }));
       rightClickMenu.appendChild(createMenuItem('Table Properties...', '⚙️', () => {
         promptTablePropertiesDialog(editor, { tableEl });
       }));
@@ -1158,6 +1186,26 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
         img.style.boxShadow = next ? '0 10px 25px rgba(0,0,0,0.25)' : 'none';
         img.setAttribute('data-shadow', next ? 'true' : 'false');
       }));
+      rightClickMenu.appendChild(createMenuItem('Reset Image Formatting (Clear)', '🧹', () => {
+        editor.execute('clearFormatting');
+        img.style.width = '';
+        img.style.height = 'auto';
+        img.style.aspectRatio = '';
+        img.style.borderRadius = '0px';
+        img.style.boxShadow = 'none';
+        img.style.border = 'none';
+        img.style.display = 'block';
+        img.style.marginLeft = 'auto';
+        img.style.marginRight = 'auto';
+        img.removeAttribute('data-width');
+        img.removeAttribute('data-height');
+        img.removeAttribute('data-aspect-ratio');
+        img.removeAttribute('data-rounded');
+        img.removeAttribute('data-shadow');
+        img.removeAttribute('data-border');
+        img.removeAttribute('data-link-url');
+        img.setAttribute('data-align', 'center');
+      }));
       rightClickMenu.appendChild(createMenuItem('Open Image in New Tab', '↗️', () => {
         if (src) window.open(src, '_blank');
       }));
@@ -1224,7 +1272,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       position: fixed;
       inset: 0;
       z-index: 100000;
-      background: rgba(4, 13, 33, 0.92);
+      background: rgba(10, 15, 29, 0.94);
       backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
@@ -1245,12 +1293,12 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: #f0f6fc;
+      color: var(--aurora-fg, #f8fafc);
       font-family: var(--aurora-font-family, system-ui, sans-serif);
       font-size: 14px;
     `;
     const titleEl = document.createElement('span');
-    titleEl.style.cssText = 'font-weight: 600; color: var(--aurora-primary, #28E6F5); letter-spacing: 0.3px;';
+    titleEl.style.cssText = 'font-weight: 600; color: var(--aurora-primary, #00E5FF); letter-spacing: 0.3px;';
     titleEl.textContent = titleText || (imageSrc ? '🔍 Image Lightbox View' : '📖 Document Lightbox View');
     bar.appendChild(titleEl);
 
@@ -1259,20 +1307,20 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
 
     let zoomLevel = 1.0;
     const zoomText = document.createElement('span');
-    zoomText.style.cssText = 'font-size: 12px; font-weight: 600; color: var(--aurora-muted-fg, #8ca0c2); min-width: 45px; text-align: center;';
+    zoomText.style.cssText = 'font-size: 12px; font-weight: 600; color: var(--aurora-muted-fg, #94a3b8); min-width: 45px; text-align: center;';
     zoomText.textContent = '100%';
 
     const zoomOutBtn = document.createElement('button');
     zoomOutBtn.type = 'button';
     zoomOutBtn.textContent = '−';
     zoomOutBtn.title = 'Zoom out';
-    zoomOutBtn.style.cssText = 'padding: 4px 10px; border-radius: 4px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(255,255,255,0.06); color: inherit; font-size: 14px; cursor: pointer;';
+    zoomOutBtn.style.cssText = 'padding: 4px 10px; border-radius: 4px; border: 1px solid var(--aurora-border, #1e293b); background: rgba(255,255,255,0.06); color: inherit; font-size: 14px; cursor: pointer;';
 
     const zoomInBtn = document.createElement('button');
     zoomInBtn.type = 'button';
     zoomInBtn.textContent = '+';
     zoomInBtn.title = 'Zoom in';
-    zoomInBtn.style.cssText = 'padding: 4px 10px; border-radius: 4px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(255,255,255,0.06); color: inherit; font-size: 14px; cursor: pointer;';
+    zoomInBtn.style.cssText = 'padding: 4px 10px; border-radius: 4px; border: 1px solid var(--aurora-border, #1e293b); background: rgba(255,255,255,0.06); color: inherit; font-size: 14px; cursor: pointer;';
 
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
@@ -1299,7 +1347,7 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
       contentEl = img;
     } else {
       const docCard = document.createElement('div');
-      docCard.style.cssText = 'background: var(--aurora-bg, #040d21); border: 1px solid var(--aurora-border, #1a3366); border-radius: 12px; padding: 36px; width: 850px; max-width: 100%; color: var(--aurora-fg, #f0f6fc); box-shadow: 0 20px 50px rgba(0,0,0,0.6); font-family: var(--aurora-font-family, system-ui, sans-serif); line-height: 1.6; transition: transform 0.15s ease;';
+      docCard.style.cssText = 'background: var(--aurora-bg, #0a0f1d); border: 1px solid var(--aurora-border, #1e293b); border-radius: 12px; padding: 36px; width: 850px; max-width: 100%; color: var(--aurora-fg, #f8fafc); box-shadow: 0 20px 50px rgba(0,0,0,0.6); font-family: var(--aurora-font-family, system-ui, sans-serif); line-height: 1.6; transition: transform 0.15s ease;';
       docCard.innerHTML = editor.export({ format: 'html' });
       contentEl = docCard;
     }
@@ -1354,8 +1402,8 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
         position: fixed !important;
         inset: 0 !important;
         z-index: 99990 !important;
-        background: var(--aurora-bg, #040d21) !important;
-        color: var(--aurora-fg, #f0f6fc) !important;
+        background: var(--aurora-bg, #0a0f1d) !important;
+        color: var(--aurora-fg, #f8fafc) !important;
         padding: 40px 60px !important;
         overflow-y: auto !important;
         box-sizing: border-box !important;
@@ -1372,9 +1420,9 @@ export function createInplaceContextMenu(options: InplaceContextMenuOptions): In
         top: 16px;
         right: 24px;
         z-index: 99995;
-        background: rgba(0,0,0,0.6);
-        color: #28E6F5;
-        border: 1px solid rgba(40,230,245,0.4);
+        background: rgba(10, 15, 29, 0.85);
+        color: #00E5FF;
+        border: 1px solid rgba(0, 229, 255, 0.4);
         padding: 6px 14px;
         border-radius: 20px;
         font-size: 12px;

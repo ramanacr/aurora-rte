@@ -39,31 +39,31 @@ export type ThemePresetName =
   | 'auto';
 
 export const AURORA_BRAND_THEME: ThemeTokens = {
-  bg: '#061535',
-  fg: '#F7F9FF',
-  mutedBg: '#0b204c',
-  mutedFg: '#9eb1db',
-  border: '#1a3366',
-  primary: '#28E6F5',
-  primaryHover: '#25E0C4',
-  primaryFg: '#061535',
-  accent: '#7549FF',
-  secondary: '#25E0C4',
-  focusRing: '#28E6F5',
-  radius: '6px',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  bg: '#171a1c',
+  fg: '#f1f4ef',
+  mutedBg: '#24292c',
+  mutedFg: '#aab2b0',
+  border: '#485054',
+  primary: '#b7ff3c',
+  primaryHover: '#c9ff70',
+  primaryFg: '#172000',
+  accent: '#62c3ff',
+  secondary: '#68e875',
+  focusRing: '#b7ff3c',
+  radius: '8px',
+  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   fontSize: '14px',
-  btnHover: '#102d68',
-  btnActive: '#163b87',
-  selectionBg: 'rgba(40, 230, 245, 0.25)',
-  selectionFg: '#ffffff',
-  additionBg: 'rgba(37, 224, 196, 0.15)',
-  additionFg: '#25E0C4',
-  deletionBg: 'rgba(255, 107, 107, 0.15)',
-  deletionFg: '#ff6b6b',
-  tableBorder: '#1a3366',
-  tableHeaderBg: '#091c42',
-  resizeHandle: '#28E6F5'
+  btnHover: '#303639',
+  btnActive: '#383f42',
+  selectionBg: 'rgba(183, 255, 60, 0.22)',
+  selectionFg: '#f1f4ef',
+  additionBg: 'rgba(104, 232, 117, 0.16)',
+  additionFg: '#68e875',
+  deletionBg: 'rgba(255, 101, 119, 0.16)',
+  deletionFg: '#ff6577',
+  tableBorder: '#485054',
+  tableHeaderBg: '#24292c',
+  resizeHandle: '#b7ff3c'
 };
 
 export const LIGHT_THEME: ThemeTokens = {
@@ -591,6 +591,15 @@ export function applyTheme(element: HTMLElement, tokens: Partial<ThemeTokens> = 
     if (merged.tableBorder) el.style.setProperty('--aurora-table-border', merged.tableBorder);
     if (merged.tableHeaderBg) el.style.setProperty('--aurora-table-header-bg', merged.tableHeaderBg);
     if (merged.resizeHandle) el.style.setProperty('--aurora-resize-handle', merged.resizeHandle);
+
+    // Extended surface and glow tokens from PhotoForge design system
+    el.style.setProperty('--aurora-surface', merged.mutedBg);
+    el.style.setProperty('--aurora-surface-raised', merged.btnHover || '#303639');
+    el.style.setProperty('--aurora-surface-hover', merged.btnActive || '#383f42');
+    el.style.setProperty('--aurora-border-subtle', '#353b3e');
+    el.style.setProperty('--aurora-primary-muted', 'rgba(183, 255, 60, 0.14)');
+    el.style.setProperty('--aurora-primary-glow', 'rgba(183, 255, 60, 0.28)');
+    el.style.setProperty('--aurora-text-on-primary', merged.primaryFg || '#172000');
   });
 }
 

@@ -312,27 +312,26 @@ export interface ToolbarInstance {
 const TOOLBAR_STYLES = `
   .aurora-toolbar {
     display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: visible;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     padding: 6px 10px;
-    background: var(--aurora-muted-bg, #0b204c);
-    border: 1px solid var(--aurora-border, #1a3366);
-    border-radius: 10px;
+    background: var(--aurora-muted-bg, #24292c);
+    border: 1px solid var(--aurora-border, #485054);
+    border-radius: var(--aurora-radius, 8px);
     box-sizing: border-box;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-    white-space: nowrap;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    max-width: 100%;
+    min-width: 0;
     scrollbar-width: thin;
-    scrollbar-color: rgba(40, 230, 245, 0.3) transparent;
+    scrollbar-color: rgba(183, 255, 60, 0.3) transparent;
   }
 
   .aurora-toolbar::-webkit-scrollbar {
     height: 4px;
   }
   .aurora-toolbar::-webkit-scrollbar-thumb {
-    background: rgba(40, 230, 245, 0.3);
+    background: rgba(183, 255, 60, 0.3);
     border-radius: 4px;
   }
 
@@ -340,10 +339,10 @@ const TOOLBAR_STYLES = `
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
     padding: 3px 4px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     box-sizing: border-box;
     flex-shrink: 0;
   }
@@ -360,7 +359,7 @@ const TOOLBAR_STYLES = `
     font-size: 13px;
     font-weight: 600;
     line-height: 1;
-    color: var(--aurora-fg, #F7F9FF);
+    color: var(--aurora-fg, #f1f4ef);
     background: transparent;
     border: 1px solid transparent;
     border-radius: 6px;
@@ -373,9 +372,9 @@ const TOOLBAR_STYLES = `
   }
 
   .aurora-toolbar-btn:hover {
-    background: rgba(40, 230, 245, 0.15);
-    border-color: rgba(40, 230, 245, 0.3);
-    color: var(--aurora-primary, #28E6F5);
+    background: var(--aurora-btn-hover, #303639);
+    border-color: rgba(183, 255, 60, 0.35);
+    color: var(--aurora-primary, #b7ff3c);
   }
 
   .aurora-toolbar-btn:active {
@@ -384,17 +383,17 @@ const TOOLBAR_STYLES = `
 
   .aurora-toolbar-btn.is-active,
   .aurora-toolbar-btn[aria-pressed="true"] {
-    background: var(--aurora-primary, #28E6F5);
-    border-color: var(--aurora-primary, #28E6F5);
-    color: #040d21;
+    background: var(--aurora-primary, #b7ff3c);
+    border-color: var(--aurora-primary, #b7ff3c);
+    color: var(--aurora-primary-fg, #172000);
     font-weight: 700;
-    box-shadow: 0 0 10px rgba(40, 230, 245, 0.45);
+    box-shadow: 0 0 14px rgba(183, 255, 60, 0.45);
   }
 
   .aurora-toolbar-btn:focus-visible {
     outline: none;
-    border-color: var(--aurora-focus-ring, #28E6F5);
-    box-shadow: 0 0 0 2px var(--aurora-focus-ring, #28E6F5);
+    border-color: var(--aurora-focus-ring, #b7ff3c);
+    box-shadow: 0 0 0 2px var(--aurora-focus-ring, #b7ff3c);
   }
 
   /* Dropdown Menus */
@@ -426,10 +425,10 @@ const TOOLBAR_STYLES = `
     position: fixed;
     z-index: 100000;
     min-width: 175px;
-    background: var(--aurora-bg, #040d21);
-    border: 1px solid var(--aurora-border, #1a3366);
+    background: var(--aurora-bg, #171a1c);
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 8px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
     padding: 6px;
     display: none;
     flex-direction: column;
@@ -453,7 +452,7 @@ const TOOLBAR_STYLES = `
     font-family: var(--aurora-font-family, system-ui, sans-serif);
     font-size: 13px;
     font-weight: 500;
-    color: var(--aurora-fg, #F7F9FF);
+    color: var(--aurora-fg, #f1f4ef);
     background: transparent;
     border: 1px solid transparent;
     border-radius: 6px;
@@ -465,8 +464,8 @@ const TOOLBAR_STYLES = `
 
   .aurora-cascade-item:hover,
   .aurora-cascade-item:focus {
-    background: rgba(40, 230, 245, 0.15);
-    color: var(--aurora-primary, #28E6F5);
+    background: rgba(183, 255, 60, 0.14);
+    color: var(--aurora-primary, #b7ff3c);
     outline: none;
   }
 
@@ -482,10 +481,10 @@ const TOOLBAR_STYLES = `
     left: 100%;
     z-index: 1001;
     min-width: 175px;
-    background: var(--aurora-bg, #040d21);
-    border: 1px solid var(--aurora-border, #1a3366);
+    background: var(--aurora-bg, #171a1c);
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 8px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
     padding: 6px;
     display: none;
     flex-direction: column;
@@ -508,7 +507,7 @@ const TOOLBAR_STYLES = `
     font-family: var(--aurora-font-family, system-ui, sans-serif);
     font-size: 13px;
     font-weight: 500;
-    color: var(--aurora-fg, #F7F9FF);
+    color: var(--aurora-fg, #f1f4ef);
     background: transparent;
     border: 1px solid transparent;
     border-radius: 6px;
@@ -520,21 +519,21 @@ const TOOLBAR_STYLES = `
 
   .aurora-dropdown-item:hover,
   .aurora-dropdown-item:focus {
-    background: rgba(40, 230, 245, 0.15);
-    color: var(--aurora-primary, #28E6F5);
+    background: rgba(183, 255, 60, 0.14);
+    color: var(--aurora-primary, #b7ff3c);
     outline: none;
   }
 
   .aurora-dropdown-item.is-active {
-    background: rgba(40, 230, 245, 0.22);
-    color: var(--aurora-primary, #28E6F5);
+    background: rgba(183, 255, 60, 0.22);
+    color: var(--aurora-primary, #b7ff3c);
     font-weight: 700;
   }
 
   /* Font Search Box & Group Headers */
   .aurora-font-search-container {
     padding: 6px 8px 8px 8px;
-    border-bottom: 1px solid var(--aurora-border, #1a3366);
+    border-bottom: 1px solid var(--aurora-border, #485054);
     margin-bottom: 4px;
     box-sizing: border-box;
   }
@@ -545,17 +544,17 @@ const TOOLBAR_STYLES = `
     font-family: var(--aurora-font-family, system-ui, sans-serif);
     font-size: 12px;
     border-radius: 6px;
-    border: 1px solid var(--aurora-border, #1a3366);
+    border: 1px solid var(--aurora-border, #485054);
     background: var(--aurora-muted-bg, rgba(255, 255, 255, 0.06));
-    color: var(--aurora-fg, #F7F9FF);
+    color: var(--aurora-fg, #f1f4ef);
     box-sizing: border-box;
     outline: none;
     transition: border-color 0.15s ease;
   }
 
   .aurora-font-search-input:focus {
-    border-color: var(--aurora-primary, #28E6F5);
-    box-shadow: 0 0 6px rgba(40, 230, 245, 0.3);
+    border-color: var(--aurora-primary, #b7ff3c);
+    box-shadow: 0 0 6px rgba(183, 255, 60, 0.35);
   }
 
   .aurora-font-group-header {
@@ -563,7 +562,7 @@ const TOOLBAR_STYLES = `
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--aurora-primary, #28E6F5);
+    color: var(--aurora-primary, #b7ff3c);
     padding: 6px 10px 4px 10px;
     margin-top: 4px;
     opacity: 0.85;
@@ -612,25 +611,25 @@ const TOOLBAR_STYLES = `
     font-weight: 600;
     text-align: center;
     background: rgba(255, 255, 255, 0.08);
-    color: var(--aurora-fg, #F7F9FF);
-    border: 1px solid var(--aurora-border, #1a3366);
+    color: var(--aurora-fg, #f1f4ef);
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 4px;
     cursor: pointer;
   }
 
   .aurora-swatch-clear:hover {
-    background: rgba(255, 60, 60, 0.2);
-    color: #ff6b6b;
+    background: rgba(255, 101, 119, 0.2);
+    color: #ff6577;
   }
 
   /* Editor & ProseMirror Content Styles */
   .ProseMirror {
     outline: none;
     min-height: 200px;
-    font-family: var(--aurora-font-family, system-ui, sans-serif);
+    font-family: var(--aurora-font-family, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
     font-size: var(--aurora-font-size, 15px);
     line-height: 1.6;
-    color: var(--aurora-fg, #F7F9FF);
+    color: var(--aurora-fg, #f1f4ef);
     word-break: break-word;
   }
 
@@ -643,24 +642,24 @@ const TOOLBAR_STYLES = `
     margin: 14px 0;
     padding: 12px 16px;
     border-radius: 8px;
-    border-left: 5px solid #28E6F5;
-    background: rgba(40, 230, 245, 0.07);
-    color: var(--aurora-fg, #F7F9FF);
+    border-left: 5px solid var(--aurora-primary, #b7ff3c);
+    background: rgba(183, 255, 60, 0.08);
+    color: var(--aurora-fg, #f1f4ef);
   }
 
   .ProseMirror .aurora-callout-warning {
-    border-left-color: #f59e0b;
-    background: rgba(245, 158, 11, 0.08);
+    border-left-color: #ffc857;
+    background: rgba(255, 200, 87, 0.08);
   }
 
   .ProseMirror .aurora-callout-error {
-    border-left-color: #ef4444;
-    background: rgba(239, 68, 68, 0.08);
+    border-left-color: #ff6577;
+    background: rgba(255, 101, 119, 0.08);
   }
 
   .ProseMirror .aurora-callout-success {
-    border-left-color: #10b981;
-    background: rgba(16, 185, 129, 0.08);
+    border-left-color: #68e875;
+    background: rgba(104, 232, 117, 0.08);
   }
 
   .ProseMirror .aurora-callout p {
@@ -670,7 +669,7 @@ const TOOLBAR_STYLES = `
   /* Details / Summary Accordion */
   .ProseMirror details.aurora-details {
     margin: 14px 0;
-    border: 1px solid var(--aurora-border, #1a3366);
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.02);
     overflow: hidden;
@@ -681,7 +680,7 @@ const TOOLBAR_STYLES = `
     cursor: pointer;
     font-weight: 600;
     background: rgba(255, 255, 255, 0.05);
-    color: var(--aurora-primary, #28E6F5);
+    color: var(--aurora-primary, #b7ff3c);
     user-select: none;
     outline: none;
   }
@@ -699,14 +698,81 @@ const TOOLBAR_STYLES = `
     margin: 16px 0;
     table-layout: fixed;
     overflow: hidden;
-    border: 2px solid var(--aurora-border, #1a3366);
+    border: 2px solid var(--aurora-border, #485054);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.02);
   }
 
+  .ProseMirror table[data-table-width="auto"],
+  .ProseMirror table.aurora-table-auto-width {
+    width: auto !important;
+    max-width: 100%;
+    table-layout: auto !important;
+  }
+
+  .ProseMirror table[data-table-width="100%"] {
+    width: 100% !important;
+    table-layout: fixed;
+  }
+
+  /* Table borders */
+  .ProseMirror table.aurora-table-bordered,
+  .ProseMirror table[data-bordered="true"] {
+    border: 2px solid var(--aurora-border, #485054);
+  }
+  .ProseMirror table.aurora-table-bordered th,
+  .ProseMirror table.aurora-table-bordered td,
+  .ProseMirror table[data-bordered="true"] th,
+  .ProseMirror table[data-bordered="true"] td {
+    border: 1px solid var(--aurora-border, #485054);
+  }
+
+  /* Borderless / Hidden borders */
+  .ProseMirror table[data-bordered="false"],
+  .ProseMirror table:not(.aurora-table-bordered):not([data-bordered="true"]) {
+    border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+  }
+  .ProseMirror table[data-bordered="false"] th,
+  .ProseMirror table[data-bordered="false"] td,
+  .ProseMirror table:not(.aurora-table-bordered):not([data-bordered="true"]) th,
+  .ProseMirror table:not(.aurora-table-bordered):not([data-bordered="true"]) td {
+    border: 1px dashed rgba(255, 255, 255, 0.08) !important;
+  }
+  [data-theme="light"] .ProseMirror table[data-bordered="false"],
+  [data-theme="light"] .ProseMirror table:not(.aurora-table-bordered):not([data-bordered="true"]) {
+    border: 1px dashed rgba(0, 0, 0, 0.15) !important;
+  }
+  [data-theme="light"] .ProseMirror table[data-bordered="false"] th,
+  [data-theme="light"] .ProseMirror table[data-bordered="false"] td,
+  [data-theme="light"] .ProseMirror table:not(.aurora-table-bordered):not([data-bordered="true"]) th,
+  [data-theme="light"] .ProseMirror table:not(.aurora-table-bordered):not([data-bordered="true"]) td {
+    border: 1px dashed rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Zebra Striping */
+  .ProseMirror table.aurora-table-striped tbody tr:nth-child(even) td:not([data-background]),
+  .ProseMirror table[data-striped="true"] tbody tr:nth-child(even) td:not([data-background]) {
+    background: rgba(255, 255, 255, 0.055);
+  }
+
+  .ProseMirror table.aurora-table-striped tbody tr:nth-child(odd) td:not([data-background]),
+  .ProseMirror table[data-striped="true"] tbody tr:nth-child(odd) td:not([data-background]) {
+    background: rgba(255, 255, 255, 0.015);
+  }
+
+  [data-theme="light"] .ProseMirror table.aurora-table-striped tbody tr:nth-child(even) td:not([data-background]),
+  [data-theme="light"] .ProseMirror table[data-striped="true"] tbody tr:nth-child(even) td:not([data-background]) {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  [data-theme="light"] .ProseMirror table.aurora-table-striped tbody tr:nth-child(odd) td:not([data-background]),
+  [data-theme="light"] .ProseMirror table[data-striped="true"] tbody tr:nth-child(odd) td:not([data-background]) {
+    background: transparent;
+  }
+
   .ProseMirror th,
   .ProseMirror td {
-    border: 1px solid var(--aurora-border, #1a3366);
+    border: 1px solid var(--aurora-border, #485054);
     padding: 10px 14px;
     min-width: 80px;
     min-height: 42px;
@@ -717,11 +783,11 @@ const TOOLBAR_STYLES = `
   }
 
   .ProseMirror th {
-    background: rgba(40, 230, 245, 0.12);
+    background: rgba(183, 255, 60, 0.12);
     font-weight: 700;
-    color: var(--aurora-primary, #28E6F5);
+    color: var(--aurora-primary, #b7ff3c);
     text-align: left;
-    border-bottom: 2px solid var(--aurora-border, #1a3366);
+    border-bottom: 2px solid var(--aurora-border, #485054);
   }
 
   .ProseMirror td {
@@ -730,7 +796,7 @@ const TOOLBAR_STYLES = `
 
   .ProseMirror td:hover,
   .ProseMirror th:hover {
-    background: rgba(40, 230, 245, 0.05);
+    background: rgba(183, 255, 60, 0.06);
   }
 
   .ProseMirror th > p,
@@ -742,15 +808,15 @@ const TOOLBAR_STYLES = `
   .ProseMirror blockquote {
     margin: 1em 0;
     padding: 8px 16px;
-    border-left: 4px solid var(--aurora-primary, #28E6F5);
-    background: rgba(40, 230, 245, 0.05);
+    border-left: 4px solid var(--aurora-primary, #b7ff3c);
+    background: rgba(183, 255, 60, 0.06);
     border-radius: 0 6px 6px 0;
-    color: var(--aurora-muted-fg, #9eb1db);
+    color: var(--aurora-muted-fg, #aab2b0);
   }
 
   .ProseMirror pre {
-    background: #020714;
-    border: 1px solid var(--aurora-border, #1a3366);
+    background: #121416;
+    border: 1px solid var(--aurora-border, #485054);
     border-radius: 6px;
     padding: 12px 16px;
     font-family: ui-monospace, monospace;
@@ -765,12 +831,12 @@ const TOOLBAR_STYLES = `
 
   .ProseMirror hr {
     border: none;
-    border-top: 2px solid var(--aurora-border, #1a3366);
+    border-top: 2px solid var(--aurora-border, #485054);
     margin: 1.5em 0;
   }
 
   .ProseMirror a {
-    color: var(--aurora-primary, #28E6F5);
+    color: var(--aurora-primary, #b7ff3c);
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;

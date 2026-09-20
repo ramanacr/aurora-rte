@@ -181,8 +181,8 @@ const nodes: Record<string, NodeSpec> = {
             rows: parseInt(el.getAttribute('data-rows') || '1', 10),
             cols: parseInt(el.getAttribute('data-cols') || '1', 10),
             tableWidth: el.getAttribute('data-table-width') || el.style.width || '100%',
-            bordered: el.getAttribute('data-bordered') !== 'false',
-            striped: el.getAttribute('data-striped') === 'true',
+            bordered: el.getAttribute('data-bordered') !== 'false' && !el.classList.contains('aurora-table-borderless'),
+            striped: el.getAttribute('data-striped') === 'true' || el.classList.contains('aurora-table-striped'),
             headerRow: el.getAttribute('data-header-row') !== 'false'
           };
         }
@@ -195,7 +195,9 @@ const nodes: Record<string, NodeSpec> = {
       if (striped) classList.push('aurora-table-striped');
       if (headerRow) classList.push('aurora-table-header-row');
 
-      const style = `width: ${tableWidth || '100%'}; table-layout: fixed; border-collapse: collapse; margin: 12px 0;`;
+      const isAuto = tableWidth === 'auto';
+      const layout = isAuto ? 'auto' : 'fixed';
+      const style = `width: ${tableWidth || '100%'}; table-layout: ${layout}; border-collapse: collapse; margin: 12px 0;`;
       return [
         'table',
         {

@@ -23,7 +23,7 @@ export const calloutBlock: CustomBlockDefinition<CalloutData> = defineCustomBloc
   renderEditable: (data: CalloutData, _onUpdate) => {
     const el = document.createElement('div');
     el.className = `aurora-callout aurora-callout-${data.type}`;
-    el.style.cssText = 'padding: 12px; border-left: 4px solid var(--aurora-primary, #28E6F5); background: var(--aurora-muted-bg, #0b204c); border-radius: 4px; margin: 8px 0;';
+    el.style.cssText = 'padding: 12px; border-left: 4px solid var(--aurora-primary, #00E5FF); background: var(--aurora-muted-bg, #111a33); border-radius: 4px; margin: 8px 0;';
 
     const titleEl = document.createElement('strong');
     titleEl.textContent = data.title;

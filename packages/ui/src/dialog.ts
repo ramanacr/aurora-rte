@@ -18,7 +18,7 @@ export interface DialogInstance {
 export function openDialog(options: DialogOptions): DialogInstance {
   const overlay = document.createElement('div');
   overlay.className = 'aurora-dialog-overlay';
-  overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+  overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(4, 8, 18, 0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999;';
 
   const dialog = document.createElement('div');
   dialog.className = 'aurora-dialog';
@@ -26,21 +26,21 @@ export function openDialog(options: DialogOptions): DialogInstance {
   dialog.setAttribute('aria-modal', 'true');
   const titleId = `dialog-title-${Date.now()}`;
   dialog.setAttribute('aria-labelledby', titleId);
-  dialog.style.cssText = 'background: var(--aurora-bg, #040d21); color: var(--aurora-fg, #F7F9FF); padding: 24px; border-radius: 12px; max-width: 480px; width: 92%; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--aurora-border, #1a3366); box-sizing: border-box; font-family: var(--aurora-font-family, system-ui, sans-serif);';
+  dialog.style.cssText = 'background: var(--aurora-bg, #171a1c); color: var(--aurora-fg, #f1f4ef); padding: 24px; border-radius: 12px; max-width: 480px; width: 92%; box-shadow: 0 20px 60px rgba(0,0,0,0.7); border: 1px solid var(--aurora-border, #485054); box-sizing: border-box; font-family: var(--aurora-font-family, system-ui, sans-serif);';
 
   const header = document.createElement('div');
   header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;';
   const titleEl = document.createElement('h3');
   titleEl.id = titleId;
   titleEl.textContent = options.title;
-  titleEl.style.cssText = 'margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--aurora-fg, #F7F9FF);';
+  titleEl.style.cssText = 'margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--aurora-fg, #f1f4ef);';
   header.appendChild(titleEl);
 
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
   closeBtn.setAttribute('aria-label', t('dialog.close', 'Close'));
   closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--aurora-muted-fg, #9eb1db); line-height: 1; padding: 4px;';
+  closeBtn.style.cssText = 'background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--aurora-muted-fg, #aab2b0); line-height: 1; padding: 4px;';
   closeBtn.addEventListener('click', close);
   header.appendChild(closeBtn);
 
@@ -48,7 +48,7 @@ export function openDialog(options: DialogOptions): DialogInstance {
 
   const body = document.createElement('div');
   body.className = 'aurora-dialog-body';
-  body.style.cssText = 'margin-bottom: 22px; color: var(--aurora-fg, #F7F9FF); font-size: 14px;';
+  body.style.cssText = 'margin-bottom: 22px; color: var(--aurora-fg, #f1f4ef); font-size: 14px;';
   if (typeof options.content === 'string') {
     body.textContent = options.content;
   } else {
@@ -62,7 +62,7 @@ export function openDialog(options: DialogOptions): DialogInstance {
   const cancelBtn = document.createElement('button');
   cancelBtn.type = 'button';
   cancelBtn.textContent = options.cancelText || t('dialog.cancel', 'Cancel');
-  cancelBtn.style.cssText = 'padding: 8px 16px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(255,255,255,0.06); cursor: pointer; color: var(--aurora-fg, #F7F9FF); font-size: 14px; font-weight: 500; transition: background 0.15s;';
+  cancelBtn.style.cssText = 'padding: 8px 16px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: rgba(255,255,255,0.06); cursor: pointer; color: var(--aurora-fg, #f1f4ef); font-size: 14px; font-weight: 500; transition: background 0.15s;';
   cancelBtn.addEventListener('click', () => {
     options.onCancel?.();
     close();
@@ -73,7 +73,7 @@ export function openDialog(options: DialogOptions): DialogInstance {
     const confirmBtn = document.createElement('button');
     confirmBtn.type = 'button';
     confirmBtn.textContent = options.confirmText || t('dialog.confirm', 'Confirm');
-    confirmBtn.style.cssText = 'padding: 8px 18px; border-radius: 6px; border: none; background: var(--aurora-primary, #28E6F5); color: #040d21; cursor: pointer; font-size: 14px; font-weight: 700; box-shadow: 0 2px 8px rgba(40,230,245,0.3); transition: opacity 0.15s;';
+    confirmBtn.style.cssText = 'padding: 8px 18px; border-radius: 6px; border: none; background: var(--aurora-primary, #b7ff3c); color: var(--aurora-primary-fg, #172000); cursor: pointer; font-size: 14px; font-weight: 700; box-shadow: 0 2px 10px rgba(183,255,60,0.35); transition: opacity 0.15s;';
     confirmBtn.addEventListener('click', async () => {
       await options.onConfirm?.();
       close();
@@ -141,7 +141,9 @@ export function promptLinkDialog(editor: AuroraEditor, initial?: PromptLinkOptio
   textInput.type = 'text';
   textInput.placeholder = 'Link display text (optional)';
   textInput.value = initial?.text || '';
-  textInput.style.cssText = 'width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-muted-bg, rgba(255,255,255,0.06)); color: inherit; box-sizing: border-box; font-size: 14px; outline: none;';
+  textInput.style.cssText = 'width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-surface, #24292c); color: var(--aurora-fg, #f1f4ef); box-sizing: border-box; font-size: 14px; outline: none; transition: border-color 0.15s;';
+  textInput.addEventListener('focus', () => { textInput.style.borderColor = 'var(--aurora-primary, #b7ff3c)'; });
+  textInput.addEventListener('blur', () => { textInput.style.borderColor = 'var(--aurora-border, #485054)'; });
   textGroup.appendChild(textLabel);
   textGroup.appendChild(textInput);
   content.appendChild(textGroup);
@@ -155,16 +157,19 @@ export function promptLinkDialog(editor: AuroraEditor, initial?: PromptLinkOptio
   urlInput.placeholder = 'https://example.com';
   urlInput.required = true;
   urlInput.value = initial?.href || '';
-  urlInput.style.cssText = 'width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-muted-bg, rgba(255,255,255,0.06)); color: inherit; box-sizing: border-box; font-size: 14px; outline: none;';
+  urlInput.style.cssText = 'width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-surface, #24292c); color: var(--aurora-fg, #f1f4ef); box-sizing: border-box; font-size: 14px; outline: none; transition: border-color 0.15s;';
+  urlInput.addEventListener('focus', () => { urlInput.style.borderColor = 'var(--aurora-primary, #b7ff3c)'; });
+  urlInput.addEventListener('blur', () => { urlInput.style.borderColor = 'var(--aurora-border, #485054)'; });
   urlGroup.appendChild(urlLabel);
   urlGroup.appendChild(urlInput);
   content.appendChild(urlGroup);
 
   const targetGroup = document.createElement('label');
-  targetGroup.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none;';
+  targetGroup.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none; color: var(--aurora-fg, #f1f4ef);';
   const targetCheckbox = document.createElement('input');
   targetCheckbox.type = 'checkbox';
   targetCheckbox.checked = initial ? initial.target === '_blank' : true;
+  targetCheckbox.style.cssText = 'accent-color: var(--aurora-primary, #b7ff3c); cursor: pointer; width: 15px; height: 15px;';
   const targetText = document.createElement('span');
   targetText.textContent = 'Open link in new tab';
   targetGroup.appendChild(targetCheckbox);
@@ -254,7 +259,7 @@ export function promptImageDialog(
   const urlGroup = document.createElement('div');
   const urlLabel = document.createElement('label');
   urlLabel.textContent = 'Image URL *';
-  urlLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;';
+  urlLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;color:var(--aurora-fg, #f1f4ef);';
   const urlRow = document.createElement('div');
   urlRow.style.cssText = 'display: flex; gap: 10px; align-items: center;';
   const urlInput = document.createElement('input');
@@ -262,10 +267,10 @@ export function promptImageDialog(
   urlInput.placeholder = 'https://images.unsplash.com/...';
   urlInput.required = true;
   urlInput.value = initial?.src || '';
-  urlInput.style.cssText = 'flex: 1; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-muted-bg, rgba(255,255,255,0.06)); color: inherit; box-sizing: border-box; font-size: 14px; outline: none;';
+  urlInput.style.cssText = 'flex: 1; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-surface, #24292c); color: var(--aurora-fg, #f1f4ef); box-sizing: border-box; font-size: 14px; outline: none;';
   
   const thumbPreview = document.createElement('img');
-  thumbPreview.style.cssText = 'width: 42px; height: 42px; object-fit: cover; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(0,0,0,0.2); display: none;';
+  thumbPreview.style.cssText = 'width: 42px; height: 42px; object-fit: cover; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: rgba(0,0,0,0.2); display: none;';
   if (initial?.src) {
     thumbPreview.src = initial.src;
     thumbPreview.style.display = 'block';
@@ -292,18 +297,18 @@ export function promptImageDialog(
   let selectedObjectFit = initial?.objectFit || 'cover';
 
   const sizeGroup = document.createElement('div');
-  sizeGroup.style.cssText = 'background: var(--aurora-muted-bg, rgba(255,255,255,0.03)); border: 1px solid var(--aurora-border, #1a3366); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px;';
+  sizeGroup.style.cssText = 'background: var(--aurora-surface, #24292c); border: 1px solid var(--aurora-border, #485054); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px;';
 
   // Sizing Mode Tabs (Free-style/Fluid vs Fixed)
   const modeHeader = document.createElement('div');
   modeHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
   const modeTitle = document.createElement('span');
-  modeTitle.style.cssText = 'font-size: 12px; font-weight: 700; color: var(--aurora-primary, #28E6F5); text-transform: uppercase; letter-spacing: 0.5px;';
+  modeTitle.style.cssText = 'font-size: 12px; font-weight: 700; color: var(--aurora-primary, #b7ff3c); text-transform: uppercase; letter-spacing: 0.5px;';
   modeTitle.textContent = '📐 Sizing & Geometry';
   modeHeader.appendChild(modeTitle);
 
   const modeSwitch = document.createElement('div');
-  modeSwitch.style.cssText = 'display: flex; gap: 4px; background: rgba(0,0,0,0.25); padding: 3px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366);';
+  modeSwitch.style.cssText = 'display: flex; gap: 4px; background: rgba(0,0,0,0.25); padding: 3px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054);';
   
   const fluidBtn = document.createElement('button');
   fluidBtn.type = 'button';
@@ -317,8 +322,8 @@ export function promptImageDialog(
 
   const updateModeStyles = () => {
     const isFluid = currentSizingMode === 'responsive';
-    fluidBtn.style.cssText = `padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: none; cursor: pointer; background: ${isFluid ? 'var(--aurora-primary, #28E6F5)' : 'transparent'}; color: ${isFluid ? '#040d21' : 'var(--aurora-fg, #F7F9FF)'};`;
-    fixedBtn.style.cssText = `padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: none; cursor: pointer; background: ${!isFluid ? 'var(--aurora-primary, #28E6F5)' : 'transparent'}; color: ${!isFluid ? '#040d21' : 'var(--aurora-fg, #F7F9FF)'};`;
+    fluidBtn.style.cssText = `padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: none; cursor: pointer; background: ${isFluid ? 'var(--aurora-primary, #b7ff3c)' : 'transparent'}; color: ${isFluid ? 'var(--aurora-primary-fg, #172000)' : 'var(--aurora-fg, #f1f4ef)'};`;
+    fixedBtn.style.cssText = `padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: none; cursor: pointer; background: ${!isFluid ? 'var(--aurora-primary, #b7ff3c)' : 'transparent'}; color: ${!isFluid ? 'var(--aurora-primary-fg, #172000)' : 'var(--aurora-fg, #f1f4ef)'};`;
   };
   updateModeStyles();
 
@@ -351,7 +356,7 @@ export function promptImageDialog(
   presetsRow.style.cssText = 'display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12px;';
   const presetsLabel = document.createElement('span');
   presetsLabel.textContent = 'Width Presets:';
-  presetsLabel.style.cssText = 'font-size: 11px; opacity: 0.8; font-weight: 600; margin-right: 2px;';
+  presetsLabel.style.cssText = 'font-size: 11px; opacity: 0.8; font-weight: 600; margin-right: 2px; color: var(--aurora-fg, #f1f4ef);';
   presetsRow.appendChild(presetsLabel);
 
   const presets = ['25%', '50%', '75%', '100%', 'Auto'];
@@ -359,17 +364,17 @@ export function promptImageDialog(
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = pct;
-    btn.style.cssText = 'padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid var(--aurora-border, #1a3366); background: transparent; color: var(--aurora-fg, #F7F9FF); cursor: pointer; transition: all 0.15s;';
+    btn.style.cssText = 'padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid var(--aurora-border, #485054); background: transparent; color: var(--aurora-fg, #f1f4ef); cursor: pointer; transition: all 0.15s;';
     btn.addEventListener('click', () => {
       customWidthInput.value = pct === 'Auto' ? 'auto' : pct;
       currentSizingMode = pct === 'Auto' ? 'responsive' : 'responsive';
       updateModeStyles();
       presetsRow.querySelectorAll('button').forEach((b) => {
         b.style.background = 'transparent';
-        b.style.color = 'var(--aurora-fg, #F7F9FF)';
+        b.style.color = 'var(--aurora-fg, #f1f4ef)';
       });
-      btn.style.background = 'var(--aurora-primary, #28E6F5)';
-      btn.style.color = '#040d21';
+      btn.style.background = 'var(--aurora-primary, #b7ff3c)';
+      btn.style.color = 'var(--aurora-primary-fg, #172000)';
     });
     presetsRow.appendChild(btn);
   });
@@ -382,12 +387,12 @@ export function promptImageDialog(
   const widthCol = document.createElement('div');
   const widthLabel = document.createElement('label');
   widthLabel.textContent = 'Width';
-  widthLabel.style.cssText = 'display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.85;';
+  widthLabel.style.cssText = 'display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.85; color: var(--aurora-fg, #f1f4ef);';
   const customWidthInput = document.createElement('input');
   customWidthInput.type = 'text';
   customWidthInput.placeholder = 'e.g. 100% or 600px';
   customWidthInput.value = initial?.width ? String(initial.width) : '100%';
-  customWidthInput.style.cssText = 'width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-bg, #040d21); color: inherit; font-size: 13px; outline: none; box-sizing: border-box;';
+  customWidthInput.style.cssText = 'width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-bg, #171a1c); color: var(--aurora-fg, #f1f4ef); font-size: 13px; outline: none; box-sizing: border-box;';
   widthCol.appendChild(widthLabel);
   widthCol.appendChild(customWidthInput);
 
@@ -397,7 +402,7 @@ export function promptImageDialog(
   lockBtn.title = 'Toggle Aspect Ratio Lock (Fixed ratio vs Free-style)';
   const updateLockBtn = () => {
     lockBtn.innerHTML = isLockedRatio ? '🔒' : '🔓';
-    lockBtn.style.cssText = `padding: 7px 10px; font-size: 14px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: ${isLockedRatio ? 'rgba(40,230,245,0.15)' : 'transparent'}; color: ${isLockedRatio ? '#28E6F5' : 'var(--aurora-muted-fg, #8ca0c2)'}; cursor: pointer; height: 36px;`;
+    lockBtn.style.cssText = `padding: 7px 10px; font-size: 14px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: ${isLockedRatio ? 'var(--aurora-primary-muted, rgba(183, 255, 60, 0.14))' : 'transparent'}; color: ${isLockedRatio ? 'var(--aurora-primary, #b7ff3c)' : 'var(--aurora-muted-fg, #aab2b0)'}; cursor: pointer; height: 36px;`;
   };
   updateLockBtn();
   lockBtn.addEventListener('click', () => {
@@ -408,12 +413,12 @@ export function promptImageDialog(
   const heightCol = document.createElement('div');
   const heightLabel = document.createElement('label');
   heightLabel.textContent = 'Height';
-  heightLabel.style.cssText = 'display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.85;';
+  heightLabel.style.cssText = 'display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.85; color: var(--aurora-fg, #f1f4ef);';
   const customHeightInput = document.createElement('input');
   customHeightInput.type = 'text';
   customHeightInput.placeholder = 'auto or 400px';
   customHeightInput.value = initial?.height ? String(initial.height) : 'auto';
-  customHeightInput.style.cssText = 'width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-bg, #040d21); color: inherit; font-size: 13px; outline: none; box-sizing: border-box;';
+  customHeightInput.style.cssText = 'width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-bg, #171a1c); color: var(--aurora-fg, #f1f4ef); font-size: 13px; outline: none; box-sizing: border-box;';
   heightCol.appendChild(heightLabel);
   heightCol.appendChild(customHeightInput);
 
@@ -427,7 +432,7 @@ export function promptImageDialog(
   ratioGroup.style.cssText = 'display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12px;';
   const ratioLabel = document.createElement('span');
   ratioLabel.textContent = 'Aspect Ratio:';
-  ratioLabel.style.cssText = 'font-size: 11px; opacity: 0.8; font-weight: 600; margin-right: 2px;';
+  ratioLabel.style.cssText = 'font-size: 11px; opacity: 0.8; font-weight: 600; margin-right: 2px; color: var(--aurora-fg, #f1f4ef);';
   ratioGroup.appendChild(ratioLabel);
 
   const ratioPresets = [
@@ -445,15 +450,15 @@ export function promptImageDialog(
     btn.type = 'button';
     btn.textContent = rp.label;
     const isCur = selectedRatio === rp.val || (rp.val === 'auto' && !selectedRatio);
-    btn.style.cssText = `padding: 4px 8px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid var(--aurora-border, #1a3366); background: ${isCur ? 'var(--aurora-primary, #28E6F5)' : 'transparent'}; color: ${isCur ? '#040d21' : 'var(--aurora-fg, #F7F9FF)'}; cursor: pointer; transition: all 0.15s;`;
+    btn.style.cssText = `padding: 4px 8px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid var(--aurora-border, #485054); background: ${isCur ? 'var(--aurora-primary, #b7ff3c)' : 'transparent'}; color: ${isCur ? 'var(--aurora-primary-fg, #172000)' : 'var(--aurora-fg, #f1f4ef)'}; cursor: pointer; transition: all 0.15s;`;
     btn.addEventListener('click', () => {
       selectedRatio = rp.val;
       ratioGroup.querySelectorAll('button').forEach((b) => {
         b.style.background = 'transparent';
-        b.style.color = 'var(--aurora-fg, #F7F9FF)';
+        b.style.color = 'var(--aurora-fg, #f1f4ef)';
       });
-      btn.style.background = 'var(--aurora-primary, #28E6F5)';
-      btn.style.color = '#040d21';
+      btn.style.background = 'var(--aurora-primary, #b7ff3c)';
+      btn.style.color = 'var(--aurora-primary-fg, #172000)';
 
       if (rp.ratio && customWidthInput.value.endsWith('px')) {
         const numW = parseInt(customWidthInput.value, 10);
@@ -468,14 +473,14 @@ export function promptImageDialog(
 
   // Object Fit Selector
   const fitRow = document.createElement('div');
-  fitRow.style.cssText = 'display: flex; gap: 8px; align-items: center; font-size: 11px; opacity: 0.9;';
+  fitRow.style.cssText = 'display: flex; gap: 8px; align-items: center; font-size: 11px; opacity: 0.9; color: var(--aurora-fg, #f1f4ef);';
   const fitLabel = document.createElement('label');
   fitLabel.textContent = 'Object Fit Scaling:';
   fitLabel.style.fontWeight = '600';
   fitRow.appendChild(fitLabel);
 
   const fitSelect = document.createElement('select');
-  fitSelect.style.cssText = 'padding: 4px 8px; border-radius: 4px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-bg, #040d21); color: inherit; font-size: 11px; outline: none; cursor: pointer;';
+  fitSelect.style.cssText = 'padding: 4px 8px; border-radius: 4px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-bg, #171a1c); color: var(--aurora-fg, #f1f4ef); font-size: 11px; outline: none; cursor: pointer;';
   ['cover', 'contain', 'fill', 'none'].forEach((f) => {
     const opt = document.createElement('option');
     opt.value = f;
@@ -495,7 +500,7 @@ export function promptImageDialog(
   const alignGroup = document.createElement('div');
   const alignLabel = document.createElement('label');
   alignLabel.textContent = 'Alignment';
-  alignLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;';
+  alignLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;color:var(--aurora-fg, #f1f4ef);';
   alignGroup.appendChild(alignLabel);
 
   let selectedAlign = initial?.align || 'center';
@@ -510,15 +515,15 @@ export function promptImageDialog(
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = opt.label;
-    btn.style.cssText = `flex: 1; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 5px; border: 1px solid var(--aurora-border, #1a3366); background: ${selectedAlign === opt.id ? 'var(--aurora-primary, #28E6F5)' : 'transparent'}; color: ${selectedAlign === opt.id ? '#040d21' : 'var(--aurora-fg, #F7F9FF)'}; cursor: pointer; transition: all 0.15s;`;
+    btn.style.cssText = `flex: 1; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 5px; border: 1px solid var(--aurora-border, #485054); background: ${selectedAlign === opt.id ? 'var(--aurora-primary, #b7ff3c)' : 'transparent'}; color: ${selectedAlign === opt.id ? 'var(--aurora-primary-fg, #172000)' : 'var(--aurora-fg, #f1f4ef)'}; cursor: pointer; transition: all 0.15s;`;
     btn.addEventListener('click', () => {
       selectedAlign = opt.id;
       alignRow.querySelectorAll('button').forEach((b) => {
         b.style.background = 'transparent';
-        b.style.color = 'var(--aurora-fg, #F7F9FF)';
+        b.style.color = 'var(--aurora-fg, #f1f4ef)';
       });
-      btn.style.background = 'var(--aurora-primary, #28E6F5)';
-      btn.style.color = '#040d21';
+      btn.style.background = 'var(--aurora-primary, #b7ff3c)';
+      btn.style.color = 'var(--aurora-primary-fg, #172000)';
     });
     alignRow.appendChild(btn);
   });
@@ -529,15 +534,16 @@ export function promptImageDialog(
   const styleGroup = document.createElement('div');
   const styleLabel = document.createElement('label');
   styleLabel.textContent = 'Visual Effects & Framing';
-  styleLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;';
+  styleLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;color:var(--aurora-fg, #f1f4ef);';
   styleGroup.appendChild(styleLabel);
 
   const stylesRow = document.createElement('div');
-  stylesRow.style.cssText = 'display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px;';
+  stylesRow.style.cssText = 'display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--aurora-fg, #f1f4ef);';
 
   const checkRounded = document.createElement('input');
   checkRounded.type = 'checkbox';
   checkRounded.checked = Boolean(initial?.rounded);
+  checkRounded.style.cssText = 'accent-color: var(--aurora-primary, #b7ff3c); cursor: pointer; width: 15px; height: 15px;';
   const labelRounded = document.createElement('label');
   labelRounded.style.cssText = 'display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;';
   labelRounded.appendChild(checkRounded);
@@ -546,6 +552,7 @@ export function promptImageDialog(
   const checkShadow = document.createElement('input');
   checkShadow.type = 'checkbox';
   checkShadow.checked = Boolean(initial?.shadow);
+  checkShadow.style.cssText = 'accent-color: var(--aurora-primary, #b7ff3c); cursor: pointer; width: 15px; height: 15px;';
   const labelShadow = document.createElement('label');
   labelShadow.style.cssText = 'display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;';
   labelShadow.appendChild(checkShadow);
@@ -554,6 +561,7 @@ export function promptImageDialog(
   const checkBorder = document.createElement('input');
   checkBorder.type = 'checkbox';
   checkBorder.checked = Boolean(initial?.border);
+  checkBorder.style.cssText = 'accent-color: var(--aurora-primary, #b7ff3c); cursor: pointer; width: 15px; height: 15px;';
   const labelBorder = document.createElement('label');
   labelBorder.style.cssText = 'display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;';
   labelBorder.appendChild(checkBorder);
@@ -569,12 +577,12 @@ export function promptImageDialog(
   const altGroup = document.createElement('div');
   const altLabel = document.createElement('label');
   altLabel.textContent = 'Alt Description (Screen readers & SEO)';
-  altLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;';
+  altLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;color:var(--aurora-fg, #f1f4ef);';
   const altInput = document.createElement('input');
   altInput.type = 'text';
   altInput.placeholder = 'Accessible description of the image';
   altInput.value = initial?.alt || '';
-  altInput.style.cssText = 'width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-muted-bg, rgba(255,255,255,0.06)); color: inherit; box-sizing: border-box; font-size: 13px; outline: none;';
+  altInput.style.cssText = 'width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-surface, #24292c); color: var(--aurora-fg, #f1f4ef); box-sizing: border-box; font-size: 13px; outline: none;';
   altGroup.appendChild(altLabel);
   altGroup.appendChild(altInput);
   content.appendChild(altGroup);
@@ -583,12 +591,12 @@ export function promptImageDialog(
   const linkGroup = document.createElement('div');
   const linkLabel = document.createElement('label');
   linkLabel.textContent = 'Link URL (optional, opens when image is clicked)';
-  linkLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;';
+  linkLabel.style.cssText = 'display:block;font-size:12px;margin-bottom:6px;font-weight:600;opacity:0.85;color:var(--aurora-fg, #f1f4ef);';
   const linkInput = document.createElement('input');
   linkInput.type = 'url';
   linkInput.placeholder = 'https://...';
   linkInput.value = initial?.linkUrl || '';
-  linkInput.style.cssText = 'width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: var(--aurora-muted-bg, rgba(255,255,255,0.06)); color: inherit; box-sizing: border-box; font-size: 13px; outline: none;';
+  linkInput.style.cssText = 'width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-surface, #24292c); color: var(--aurora-fg, #f1f4ef); box-sizing: border-box; font-size: 13px; outline: none;';
   linkGroup.appendChild(linkLabel);
   linkGroup.appendChild(linkInput);
   content.appendChild(linkGroup);
@@ -678,8 +686,8 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
   // Section 1: Dimensions & Layout
   const dimSection = document.createElement('div');
   dimSection.innerHTML = `
-    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aurora-primary, #28E6F5); margin-bottom: 8px;">
-      📐 Table Geometry & Width
+    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aurora-primary, #b7ff3c); margin-bottom: 8px;">
+      📐 Table Geometry &amp; Width
     </div>
   `;
 
@@ -697,15 +705,15 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
   customWidthInput.type = 'text';
   customWidthInput.value = currentWidth;
   customWidthInput.placeholder = 'e.g. 100%, 650px, auto';
-  customWidthInput.style.cssText = 'width: 100%; padding: 7px 10px; font-size: 13px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(255,255,255,0.06); color: var(--aurora-fg, #f0f6fc); outline: none; box-sizing: border-box;';
+  customWidthInput.style.cssText = 'width: 100%; padding: 7px 10px; font-size: 13px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-surface, #24292c); color: var(--aurora-fg, #f1f4ef); outline: none; box-sizing: border-box;';
 
   function updatePresetSelection(val: string) {
     currentWidth = val;
     customWidthInput.value = val;
     presetBtns.forEach((btn) => {
       const isSelected = btn.getAttribute('data-val') === val;
-      btn.style.background = isSelected ? 'var(--aurora-primary, #28E6F5)' : 'rgba(255,255,255,0.06)';
-      btn.style.color = isSelected ? '#040d21' : 'var(--aurora-fg, #f0f6fc)';
+      btn.style.background = isSelected ? 'var(--aurora-primary, #b7ff3c)' : 'rgba(255,255,255,0.06)';
+      btn.style.color = isSelected ? 'var(--aurora-primary-fg, #172000)' : 'var(--aurora-fg, #f1f4ef)';
       btn.style.fontWeight = isSelected ? '700' : '500';
     });
   }
@@ -715,7 +723,7 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
     btn.type = 'button';
     btn.textContent = p.label;
     btn.setAttribute('data-val', p.val);
-    btn.style.cssText = 'flex: 1; padding: 6px 4px; font-size: 11px; border-radius: 5px; border: 1px solid var(--aurora-border, #1a3366); cursor: pointer; transition: all 0.15s;';
+    btn.style.cssText = 'flex: 1; padding: 6px 4px; font-size: 11px; border-radius: 5px; border: 1px solid var(--aurora-border, #485054); cursor: pointer; transition: all 0.15s;';
     btn.addEventListener('click', () => updatePresetSelection(p.val));
     presetBtns.push(btn);
     widthPresetContainer.appendChild(btn);
@@ -733,27 +741,27 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
   // Section 2: Table Structure & Styling
   const styleSection = document.createElement('div');
   styleSection.innerHTML = `
-    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aurora-primary, #28E6F5); margin-bottom: 8px;">
-      🎨 Design & Structure Presets
+    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aurora-primary, #b7ff3c); margin-bottom: 8px;">
+      🎨 Design &amp; Structure Presets
     </div>
   `;
 
   const togglesContainer = document.createElement('div');
-  togglesContainer.style.cssText = 'display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366);';
+  togglesContainer.style.cssText = 'display: flex; flex-direction: column; gap: 8px; background: var(--aurora-surface, #24292c); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054);';
 
   function createCheckbox(label: string, checked: boolean, desc: string, onChange: (val: boolean) => void) {
     const row = document.createElement('label');
-    row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px;';
+    row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; color: var(--aurora-fg, #f1f4ef);';
     row.innerHTML = `
       <div>
         <div style="font-weight: 600;">${label}</div>
-        <div style="font-size: 11px; color: var(--aurora-muted-fg, #8ca0c2);">${desc}</div>
+        <div style="font-size: 11px; color: var(--aurora-muted-fg, #aab2b0);">${desc}</div>
       </div>
     `;
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.checked = checked;
-    cb.style.cssText = 'width: 16px; height: 16px; cursor: pointer; accent-color: var(--aurora-primary, #28E6F5);';
+    cb.style.cssText = 'width: 16px; height: 16px; cursor: pointer; accent-color: var(--aurora-primary, #b7ff3c);';
     cb.addEventListener('change', () => onChange(cb.checked));
     row.appendChild(cb);
     return row;
@@ -769,21 +777,21 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
   // Section 3: Column Widths & Row Heights
   const sizingSection = document.createElement('div');
   sizingSection.innerHTML = `
-    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aurora-primary, #28E6F5); margin-bottom: 8px;">
-      📏 Column Width & Row Height Sizing
+    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aurora-primary, #b7ff3c); margin-bottom: 8px;">
+      📏 Column Width &amp; Row Height Sizing
     </div>
   `;
 
   const sizingGrid = document.createElement('div');
-  sizingGrid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(255,255,255,0.03); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #1a3366);';
+  sizingGrid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--aurora-surface, #24292c); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--aurora-border, #485054);';
 
   // Column width input
   const colBox = document.createElement('div');
-  colBox.innerHTML = '<label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Column Width</label>';
+  colBox.innerHTML = '<label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px; color:var(--aurora-fg, #f1f4ef);">Column Width</label>';
   const colInput = document.createElement('input');
   colInput.type = 'text';
   colInput.placeholder = 'e.g. 150px, auto';
-  colInput.style.cssText = 'width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 4px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(255,255,255,0.06); color: var(--aurora-fg, #f0f6fc); outline: none; box-sizing: border-box;';
+  colInput.style.cssText = 'width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 4px; border: 1px solid var(--aurora-border, #485054); background: rgba(255,255,255,0.04); color: var(--aurora-fg, #f1f4ef); outline: none; box-sizing: border-box;';
   
   const colPresets = document.createElement('div');
   colPresets.style.cssText = 'display: flex; gap: 4px; margin-top: 6px;';
@@ -791,7 +799,7 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = w;
-    btn.style.cssText = 'flex: 1; padding: 3px 2px; font-size: 10px; border-radius: 3px; border: 1px solid var(--aurora-border, #1a3366); background: transparent; color: var(--aurora-fg, #f0f6fc); cursor: pointer;';
+    btn.style.cssText = 'flex: 1; padding: 3px 2px; font-size: 10px; border-radius: 3px; border: 1px solid var(--aurora-border, #485054); background: transparent; color: var(--aurora-fg, #f1f4ef); cursor: pointer;';
     btn.addEventListener('click', () => { colInput.value = w === 'Auto' ? 'auto' : w; });
     colPresets.appendChild(btn);
   });
@@ -800,11 +808,11 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
 
   // Row height input
   const rowBox = document.createElement('div');
-  rowBox.innerHTML = '<label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Row Height</label>';
+  rowBox.innerHTML = '<label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px; color:var(--aurora-fg, #f1f4ef);">Row Height</label>';
   const rowInput = document.createElement('input');
   rowInput.type = 'text';
   rowInput.placeholder = 'e.g. 50px, auto';
-  rowInput.style.cssText = 'width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 4px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(255,255,255,0.06); color: var(--aurora-fg, #f0f6fc); outline: none; box-sizing: border-box;';
+  rowInput.style.cssText = 'width: 100%; padding: 6px 8px; font-size: 12px; border-radius: 4px; border: 1px solid var(--aurora-border, #485054); background: rgba(255,255,255,0.04); color: var(--aurora-fg, #f1f4ef); outline: none; box-sizing: border-box;';
 
   const rowPresets = document.createElement('div');
   rowPresets.style.cssText = 'display: flex; gap: 4px; margin-top: 6px;';
@@ -812,7 +820,7 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = h;
-    btn.style.cssText = 'flex: 1; padding: 3px 2px; font-size: 10px; border-radius: 3px; border: 1px solid var(--aurora-border, #1a3366); background: transparent; color: var(--aurora-fg, #f0f6fc); cursor: pointer;';
+    btn.style.cssText = 'flex: 1; padding: 3px 2px; font-size: 10px; border-radius: 3px; border: 1px solid var(--aurora-border, #485054); background: transparent; color: var(--aurora-fg, #f1f4ef); cursor: pointer;';
     btn.addEventListener('click', () => { rowInput.value = h === 'Auto' ? 'auto' : h; });
     rowPresets.appendChild(btn);
   });
@@ -827,7 +835,7 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
   const distributeBtn = document.createElement('button');
   distributeBtn.type = 'button';
   distributeBtn.textContent = '↔ Distribute Columns Evenly (Equal Widths)';
-  distributeBtn.style.cssText = 'margin-top: 8px; width: 100%; padding: 6px 10px; font-size: 12px; font-weight: 500; border-radius: 5px; border: 1px solid var(--aurora-border, #1a3366); background: rgba(40, 230, 245, 0.08); color: var(--aurora-primary, #28E6F5); cursor: pointer; transition: all 0.15s;';
+  distributeBtn.style.cssText = 'margin-top: 8px; width: 100%; padding: 6px 10px; font-size: 12px; font-weight: 500; border-radius: 5px; border: 1px solid var(--aurora-border, #485054); background: var(--aurora-primary-muted, rgba(183, 255, 60, 0.1)); color: var(--aurora-primary, #b7ff3c); cursor: pointer; transition: all 0.15s;';
   distributeBtn.addEventListener('click', () => {
     editor.execute('distributeTableCols');
     colInput.value = 'distributed';
@@ -849,6 +857,7 @@ export function promptTablePropertiesDialog(editor: AuroraEditor, options: Promp
       editor.execute('updateTable', data);
       if (tableEl) {
         tableEl.style.width = data.tableWidth;
+        tableEl.style.tableLayout = data.tableWidth === 'auto' ? 'auto' : 'fixed';
         tableEl.setAttribute('data-table-width', data.tableWidth);
         tableEl.setAttribute('data-bordered', String(data.bordered));
         tableEl.setAttribute('data-striped', String(data.striped));

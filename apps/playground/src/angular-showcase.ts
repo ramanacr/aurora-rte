@@ -71,14 +71,14 @@ const angularInitialDoc: AuroraDocument = {
 
 export function mountAngularShowcase(container: HTMLElement) {
   container.innerHTML = `
-    <div style="background: #040d21; border: 1px solid #132a59; border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #132a59; padding-bottom: 12px;">
+    <div style="background: var(--aurora-bg, #040d21); border: 1px solid var(--aurora-border, #132a59); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--aurora-border, #132a59); padding-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <div>
           <h3 style="margin: 0; color: #DD0031; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
             <span style="background: #DD0031; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; font-weight: 700;">🅰️</span>
             Angular 17+ Enterprise Integration
           </h3>
-          <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #8ca0c2;">
+          <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--aurora-muted-fg, #8ca0c2);">
             Demonstrating standalone components (<aurora-editor>, <aurora-rte-toolbar>, <aurora-element-inspector>) with DI tokens and zero extra runtime bloat.
           </p>
         </div>
@@ -91,32 +91,32 @@ export function mountAngularShowcase(container: HTMLElement) {
 
       <!-- Quick Template Inserters & Action Bar -->
       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-        <button id="ng-btn-insert-article" style="padding: 6px 12px; font-size: 0.82rem; font-weight: 600; background: #0c234b; color: #28E6F5; border: 1px solid #1f3b73; border-radius: 4px; cursor: pointer;">
+        <button id="ng-btn-insert-article" style="padding: 6px 12px; font-size: 0.82rem; font-weight: 600; background: var(--aurora-muted-bg, #111a33); color: var(--aurora-primary, #00E5FF); border: 1px solid var(--aurora-border, #1e293b); border-radius: 4px; cursor: pointer;">
           + Insert Semantic Article
         </button>
-        <button id="ng-btn-insert-dialog" style="padding: 6px 12px; font-size: 0.82rem; font-weight: 600; background: #0c234b; color: #25E0C4; border: 1px solid #1f3b73; border-radius: 4px; cursor: pointer;">
+        <button id="ng-btn-insert-dialog" style="padding: 6px 12px; font-size: 0.82rem; font-weight: 600; background: var(--aurora-muted-bg, #111a33); color: var(--aurora-secondary, #10B981); border: 1px solid var(--aurora-border, #1e293b); border-radius: 4px; cursor: pointer;">
           + Insert Dialog Modal
         </button>
-        <button id="ng-btn-audit-a11y" style="padding: 6px 12px; font-size: 0.82rem; font-weight: 600; background: #0c234b; color: #FFAA00; border: 1px solid #1f3b73; border-radius: 4px; cursor: pointer;">
+        <button id="ng-btn-audit-a11y" style="padding: 6px 12px; font-size: 0.82rem; font-weight: 600; background: var(--aurora-muted-bg, #111a33); color: #FFAA00; border: 1px solid var(--aurora-border, #1e293b); border-radius: 4px; cursor: pointer;">
           ♿ Run WCAG Audit
         </button>
       </div>
 
       <!-- Editor & Inspector Grid -->
-      <div style="display: grid; grid-template-columns: 1fr 320px; gap: 16px;">
-        <div style="display: flex; flex-direction: column;">
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px;">
+        <div style="display: flex; flex-direction: column; min-width: 0;">
           <div id="ng-toolbar-mount" style="margin-bottom: 10px;"></div>
-          <div id="ng-editor-mount" style="min-height: 380px; padding: 14px; background: #020814; border: 1px solid #132a59; border-radius: 6px; color: #f0f4f8; outline: none;"></div>
+          <div id="ng-editor-mount" style="min-height: 380px; padding: 14px; background: var(--aurora-bg, #0a0f1d); border: 1px solid var(--aurora-border, #1e293b); border-radius: 6px; color: var(--aurora-fg, #f8fafc); outline: none;"></div>
         </div>
 
         <!-- Live Element Inspector / WCAG Panel -->
-        <div style="background: #061530; border: 1px solid #132a59; border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #132a59; padding-bottom: 8px;">
-            <strong style="color: #28E6F5; font-size: 0.88rem;">Inspector & WCAG Auditor</strong>
-            <span id="ng-a11y-badge" style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,170,0,0.15); color: #FFAA00;">Auditing...</span>
+        <div style="background: var(--aurora-muted-bg, #111a33); border: 1px solid var(--aurora-border, #1e293b); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--aurora-border, #1e293b); padding-bottom: 8px;">
+            <strong style="color: var(--aurora-primary, #00E5FF); font-size: 0.88rem;">Inspector & WCAG Auditor</strong>
+            <span id="ng-a11y-badge" style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,170,0,0.15); color: #FFAA00; font-weight: 600;">Auditing...</span>
           </div>
 
-          <div id="ng-inspector-content" style="font-size: 0.82rem; color: #8ca0c2; display: flex; flex-direction: column; gap: 10px;">
+          <div id="ng-inspector-content" style="font-size: 0.82rem; color: var(--aurora-muted-fg, #94a3b8); display: flex; flex-direction: column; gap: 10px;">
             <div>Click on any element in the editor (or the image above) to inspect attributes, tag hierarchy, and accessibility rules.</div>
           </div>
         </div>
@@ -156,7 +156,7 @@ export function mountAngularShowcase(container: HTMLElement) {
         issues.forEach((issue: AccessibilityIssue) => {
           const card = document.createElement('div');
           card.style.cssText = `
-            background: #091c3d;
+            background: var(--aurora-bg, #091c3d);
             border: 1px solid #FFAA00;
             border-radius: 6px;
             padding: 10px;
@@ -169,7 +169,7 @@ export function mountAngularShowcase(container: HTMLElement) {
               <span style="color: #FFAA00; font-weight: 700; font-size: 0.75rem;">WCAG Issue: ${issue.elementTag}</span>
               <span style="font-size: 0.7rem; color: #ff6b6b; font-weight: 600;">${issue.severity.toUpperCase()}</span>
             </div>
-            <div style="color: #e2ecf9; font-size: 0.8rem;">${issue.message}</div>
+            <div style="color: var(--aurora-fg, #e2ecf9); font-size: 0.8rem;">${issue.message}</div>
             <button class="fix-btn" style="padding: 4px 8px; font-size: 0.75rem; background: #00FF88; color: #040d21; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; align-self: flex-start; margin-top: 4px;">
               ⚡ Apply One-Click Fix
             </button>

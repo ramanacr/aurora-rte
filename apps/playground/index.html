@@ -18,7 +18,12 @@
     <link rel="icon" type="image/svg+xml" href="./assets/branding/aurora-icon.svg" />
     <link rel="icon" type="image/png" href="./favicon-64.png" />
     <link rel="apple-touch-icon" href="./assets/branding/aurora-icon.svg" />
-    <meta name="theme-color" content="#040d21" />
+    <meta name="theme-color" content="#171a1c" />
+
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
     <!-- Open Graph / Facebook / LinkedIn -->
     <meta property="og:type" content="website" />
@@ -62,8 +67,8 @@
     }
     </script>
   </head>
-  <body style="margin: 0; padding: 0; background: var(--aurora-bg, #040d21); color: var(--aurora-fg, #f0f4f8); transition: background 0.2s ease, color 0.2s ease;">
-    <div id="app"></div>
+  <body style="margin: 0; padding: 0; background: var(--aurora-bg, #171a1c); color: var(--aurora-fg, #f1f4ef); font-family: var(--aurora-font-family, 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; transition: background 0.2s ease, color 0.2s ease;">
+    <div id="app" style="width: 100%; min-height: 100vh; margin: 0; padding: 0;"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
