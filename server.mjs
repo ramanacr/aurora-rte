@@ -16,6 +16,7 @@ const MIME_TYPES = {
   '.mjs': 'application/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.md': 'text/plain; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -25,6 +26,20 @@ const MIME_TYPES = {
   '.woff': 'font/woff',
   '.woff2': 'font/woff2'
 };
+
+const DOCS_DIR = path.join(__dirname, 'apps', 'docs', 'src');
+
+/** Returns the sorted list of available doc page slugs. */
+function listDocPages() {
+  try {
+    return fs.readdirSync(DOCS_DIR)
+      .filter(f => f.endsWith('.md'))
+      .map(f => f.replace('.md', ''))
+      .sort();
+  } catch {
+    return [];
+  }
+}
 
 const startTime = Date.now();
 
@@ -127,6 +142,28 @@ const server = http.createServer((req, res) => {
     }
   }
 
+  // Documentation API — list all pages
+  if (pathname === '/api/docs' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ pages: listDocPages() }));
+    return;
+  }
+
+  // Documentation API — serve a single markdown page
+  const docsMatch = pathname.match(/^\/api\/docs\/([a-z0-9_-]+)$/i);
+  if (docsMatch && req.method === 'GET') {
+    const slug = docsMatch[1];
+    const mdFile = path.join(DOCS_DIR, `${slug}.md`);
+    if (fs.existsSync(mdFile)) {
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+      fs.createReadStream(mdFile).pipe(res);
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: `Doc page "${slug}" not found`, available: listDocPages() }));
+    }
+    return;
+  }
+
   // Static File Serving
   let filePath = path.join(STATIC_DIR, pathname === '/' ? 'index.html' : pathname);
 
@@ -195,5 +232,6 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Aurora RTE Server running at http://localhost:${PORT}`);
   console.log(`📡 WebSocket Collaboration Hub listening at ws://localhost:${PORT}/ws`);
   console.log(`🩺 Health probe: http://localhost:${PORT}/healthz`);
+  console.log(`📚 Docs API: http://localhost:${PORT}/api/docs  (pages: ${listDocPages().join(', ')})`);
   console.log(`=======================================================`);
 });

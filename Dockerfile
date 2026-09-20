@@ -22,6 +22,9 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm build
 RUN npx vite build apps/playground
 
+# Prune dev dependencies so node_modules contains only production dependencies
+RUN pnpm prune --prod
+
 # Production runner stage
 FROM node:22-alpine AS runner
 
@@ -30,24 +33,21 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Install pnpm in runner to run production dependencies
-RUN corepack enable && corepack prepare pnpm@12.3.4 --activate
-
-# Copy root manifests
+# Copy root manifests and static server
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY packages ./packages
 COPY services ./services
-COPY apps ./apps
 COPY scripts ./scripts
 COPY server.mjs ./
 
-# Copy compiled outputs from builder
-COPY --from=builder /app/packages /app/packages
-COPY --from=builder /app/services /app/services
-COPY --from=builder /app/apps/playground/dist /app/apps/playground/dist
+# Copy documentation source (served via /api/docs/* at runtime)
+COPY apps/docs ./apps/docs
 
-# Install production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Copy compiled outputs and production dependencies from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/services ./services
+COPY --from=builder /app/apps/playground/dist ./apps/playground/dist
 
 EXPOSE 3000
 

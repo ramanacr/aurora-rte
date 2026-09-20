@@ -19,6 +19,26 @@ import { createRoot } from 'react-dom/client';
 import { ReactEditorApp } from './react-showcase.js';
 import { mountAngularShowcase } from './angular-showcase.js';
 
+// Documentation pages — bundled at build time so they work on GitHub Pages (static)
+// and in Docker (server). Vite resolves ?raw imports as plain strings.
+import quickstartMd from '../../docs/src/quickstart.md?raw';
+import apiReferenceMd from '../../docs/src/api-reference.md?raw';
+import frameworkIntegrationsMd from '../../docs/src/framework-integrations.md?raw';
+import extensionsMd from '../../docs/src/extensions.md?raw';
+import securityMd from '../../docs/src/security.md?raw';
+import aboutMd from '../../docs/src/about.md?raw';
+import privacyMd from '../../docs/src/privacy.md?raw';
+
+const BUNDLED_DOCS: Record<string, string> = {
+  'quickstart': quickstartMd,
+  'api-reference': apiReferenceMd,
+  'framework-integrations': frameworkIntegrationsMd,
+  'extensions': extensionsMd,
+  'security': securityMd,
+  'about': aboutMd,
+  'privacy': privacyMd,
+};
+
 const initialDoc: AuroraDocument = {
   format: 'aurora',
   version: 1,
@@ -185,19 +205,22 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
     }
   }
 
-  // Layout container
+  // Layout container (full-screen width)
   const container = document.createElement('div');
   container.className = 'aurora-playground-container';
   container.style.cssText = `
-    max-width: 1280px;
-    margin: 20px auto;
-    font-family: var(--aurora-font-family, system-ui, sans-serif);
-    background: var(--aurora-bg, #040d21);
-    color: var(--aurora-fg, #f0f4f8);
-    padding: 24px;
-    border-radius: 12px;
-    border: 1px solid var(--aurora-border, #132a59);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    font-family: var(--aurora-font-family, 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif);
+    background: var(--aurora-bg, #171a1c);
+    color: var(--aurora-fg, #f1f4ef);
+    padding: 16px 24px 32px 24px;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
   `;
 
   // Header
@@ -206,7 +229,7 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--aurora-border, #132a59);
+    border-bottom: 1px solid var(--aurora-border, #485054);
     padding-bottom: 16px;
     margin-bottom: 20px;
     flex-wrap: wrap;
@@ -214,26 +237,29 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
   `;
   header.innerHTML = `
     <div style="display: flex; align-items: center; gap: 14px;">
-      <img src="/favicon-64.png" alt="Aurora Logo" style="width: 42px; height: 42px; filter: drop-shadow(0 0 8px rgba(40,230,245,0.4));" />
+      <button id="btn-sidebar-toggle" title="Toggle Navigation Menu (Ctrl+B)" style="background: var(--aurora-primary-muted, rgba(183,255,60,0.08)); border: 1px solid var(--aurora-border, #485054); color: var(--aurora-primary, #b7ff3c); border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; transition: all 0.15s ease;">
+        ☰
+      </button>
+      <img src="/favicon-64.png" alt="Aurora Logo" style="width: 42px; height: 42px; filter: drop-shadow(0 0 12px rgba(183,255,60,0.45));" />
       <div>
-        <h2 style="margin: 0; font-size: 1.5rem; color: var(--aurora-primary, #28E6F5); letter-spacing: -0.02em;">
+        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--aurora-primary, #b7ff3c); letter-spacing: -0.02em; text-shadow: 0 0 20px rgba(183,255,60,0.3);">
           Aurora Editor Playground
         </h2>
-        <p style="margin: 3px 0 0 0; font-size: 0.85rem; color: var(--aurora-muted-fg, #8ca0c2);">
+        <p style="margin: 3px 0 0 0; font-size: 0.85rem; color: var(--aurora-muted-fg, #aab2b0);">
           Client-Side Core · Governed Services · Real-Time Collaboration
         </p>
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <div id="net-badge" style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: rgba(37,224,196,0.1); color: #25E0C4; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(37,224,196,0.3);">
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #25E0C4;"></span>
+      <div id="net-badge" style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; background: rgba(99,102,241,0.12); color: #818cf8; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(99,102,241,0.3);">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #6366F1;"></span>
         <span>Local / Broadcast Ready</span>
       </div>
-      <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--aurora-border, rgba(255,255,255,0.1));">
-        <label for="theme-preset-select" style="font-size: 0.8rem; font-weight: 600; color: var(--aurora-muted-fg, #8ca0c2); white-space: nowrap;">Theme / SaaS:</label>
-        <select id="theme-preset-select" style="background: rgba(0,0,0,0.3); color: var(--aurora-fg, #f0f4f8); border: 1px solid var(--aurora-border, #132a59); border-radius: 4px; padding: 4px 8px; font-size: 0.8rem; cursor: pointer; outline: none;">
+      <div style="display: flex; align-items: center; gap: 8px; background: var(--aurora-surface, #24292c); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--aurora-border, #485054);">
+        <label for="theme-preset-select" style="font-size: 0.8rem; font-weight: 600; color: var(--aurora-muted-fg, #aab2b0); white-space: nowrap;">Theme / SaaS:</label>
+        <select id="theme-preset-select" style="background: var(--aurora-bg, #171a1c); color: var(--aurora-fg, #f1f4ef); border: 1px solid var(--aurora-border, #485054); border-radius: 6px; padding: 4px 8px; font-size: 0.8rem; cursor: pointer; outline: none;">
           <option value="auto">Auto-Inherit Host</option>
-          <option value="aurora-dark" selected>Aurora Dark (Default)</option>
+          <option value="aurora-dark" selected>Aurora Dark (Stitch Default)</option>
           <option value="aurora-light">Aurora Light</option>
           <option value="shadcn-dark">Shadcn / Tailwind Dark</option>
           <option value="shadcn-light">Shadcn / Tailwind Light</option>
@@ -244,103 +270,310 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
           <option value="high-contrast">High Contrast (A11y)</option>
         </select>
         <div style="display: flex; align-items: center; gap: 4px;" title="Custom Brand Primary Color">
-          <input type="color" id="theme-brand-color" value="#28E6F5" style="width: 24px; height: 24px; border: none; border-radius: 4px; cursor: pointer; background: transparent; padding: 0;" />
+          <input type="color" id="theme-brand-color" value="#b7ff3c" style="width: 24px; height: 24px; border: none; border-radius: 4px; cursor: pointer; background: transparent; padding: 0;" />
         </div>
       </div>
     </div>
   `;
   container.appendChild(header);
 
-  // Navigation Tabs
-  const nav = document.createElement('div');
-  nav.style.cssText = `
+  // Layout Body: Collapsible Left Sidebar + Main Content Area
+  const layoutBody = document.createElement('div');
+  layoutBody.className = 'aurora-playground-body';
+  layoutBody.style.cssText = `
     display: flex;
-    gap: 8px;
-    border-bottom: 2px solid var(--aurora-border, #132a59);
-    margin-bottom: 20px;
-    padding-bottom: 2px;
+    gap: 20px;
+    align-items: flex-start;
+    width: 100%;
+    min-height: 720px;
+    box-sizing: border-box;
   `;
-  nav.innerHTML = `
-    <button id="tab-collab" style="padding: 10px 18px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; border-bottom: 3px solid #28E6F5; background: rgba(40,230,245,0.08); color: #28E6F5; border-radius: 6px 6px 0 0;">
-      👥 Live Collaborative Testing (Alice & Bob)
-    </button>
-    <button id="tab-single" style="padding: 10px 18px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; border-bottom: 3px solid transparent; background: transparent; color: var(--aurora-muted-fg, #8ca0c2); border-radius: 6px 6px 0 0;">
-      🌟 Single Editor Showcase
-    </button>
-    <button id="tab-react" style="padding: 10px 18px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; border-bottom: 3px solid transparent; background: transparent; color: var(--aurora-muted-fg, #8ca0c2); border-radius: 6px 6px 0 0;">
-      ⚛️ React 19 Native Showcase
-    </button>
-    <button id="tab-angular" style="padding: 10px 18px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; border-bottom: 3px solid transparent; background: transparent; color: var(--aurora-muted-fg, #8ca0c2); border-radius: 6px 6px 0 0;">
-      🅰️ Angular 17+ Showcase
-    </button>
-    <button id="tab-model" style="padding: 10px 18px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; border-bottom: 3px solid transparent; background: transparent; color: var(--aurora-muted-fg, #8ca0c2); border-radius: 6px 6px 0 0;">
-      📦 Model & Exporter Inspector
-    </button>
+
+  // Determine initial collapsed state from localStorage
+  let isSidebarCollapsed = false;
+  try {
+    isSidebarCollapsed = localStorage.getItem('aurora_menu_collapsed') === 'true';
+  } catch {}
+
+  // Left-Side Collapsible Sidebar
+  const sidebar = document.createElement('aside');
+  sidebar.className = 'aurora-sidebar';
+  sidebar.style.cssText = `
+    width: ${isSidebarCollapsed ? '64px' : '260px'};
+    min-width: ${isSidebarCollapsed ? '64px' : '260px'};
+    background: var(--aurora-surface, #24292c);
+    border: 1px solid var(--aurora-border, #485054);
+    border-radius: 10px;
+    padding: ${isSidebarCollapsed ? '12px 6px' : '14px 10px'};
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1), padding 0.22s ease;
+    flex-shrink: 0;
+    overflow: hidden;
   `;
-  container.appendChild(nav);
+
+  sidebar.innerHTML = `
+    <div style="display: flex; justify-content: ${isSidebarCollapsed ? 'center' : 'space-between'}; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--aurora-border, #485054); margin-bottom: 2px;">
+      <span class="sidebar-section-title" style="display: ${isSidebarCollapsed ? 'none' : 'block'}; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--aurora-muted-fg, #aab2b0); white-space: nowrap;">
+        Workspaces
+      </span>
+      <button id="sidebar-inner-toggle" title="${isSidebarCollapsed ? 'Expand Menu (Ctrl+B)' : 'Collapse Menu (Ctrl+B)'}" style="background: rgba(255,255,255,0.04); border: 1px solid var(--aurora-border, #485054); color: var(--aurora-muted-fg, #aab2b0); border-radius: 4px; width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; line-height: 1; transition: all 0.15s ease;">
+        ${isSidebarCollapsed ? '▶' : '◀'}
+      </button>
+    </div>
+
+    <nav class="aurora-sidebar-nav" style="display: flex; flex-direction: column; gap: 6px;">
+      <button id="tab-collab" title="Live Collaborative Testing (Alice &amp; Bob)" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--aurora-primary-muted, rgba(183,255,60,0.4)); background: var(--aurora-primary-muted, rgba(183,255,60,0.12)); color: var(--aurora-primary, #b7ff3c); cursor: pointer; text-align: left; transition: all 0.15s ease; box-shadow: 0 0 12px rgba(183,255,60,0.15);">
+        <span style="font-size: 1.15rem; width: 24px; text-align: center; flex-shrink: 0;">👥</span>
+        <div class="sidebar-text-col" style="display: ${isSidebarCollapsed ? 'none' : 'flex'}; flex-direction: column; overflow: hidden; white-space: nowrap;">
+          <span style="font-size: 0.88rem; font-weight: 600;">Collaborative Sync</span>
+          <span style="font-size: 0.72rem; opacity: 0.75;">Alice &amp; Bob Multi-Client</span>
+        </div>
+      </button>
+
+      <button id="tab-single" title="Single Editor Showcase" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--aurora-muted-fg, #aab2b0); cursor: pointer; text-align: left; transition: all 0.15s ease;">
+        <span style="font-size: 1.15rem; width: 24px; text-align: center; flex-shrink: 0;">🌟</span>
+        <div class="sidebar-text-col" style="display: ${isSidebarCollapsed ? 'none' : 'flex'}; flex-direction: column; overflow: hidden; white-space: nowrap;">
+          <span style="font-size: 0.88rem; font-weight: 600;">Single Showcase</span>
+          <span style="font-size: 0.72rem; opacity: 0.75;">Complete Feature Set</span>
+        </div>
+      </button>
+
+      <button id="tab-react" title="React 19 Native Showcase" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--aurora-muted-fg, #aab2b0); cursor: pointer; text-align: left; transition: all 0.15s ease;">
+        <span style="font-size: 1.15rem; width: 24px; text-align: center; flex-shrink: 0;">⚛️</span>
+        <div class="sidebar-text-col" style="display: ${isSidebarCollapsed ? 'none' : 'flex'}; flex-direction: column; overflow: hidden; white-space: nowrap;">
+          <span style="font-size: 0.88rem; font-weight: 600;">React 19 Native</span>
+          <span style="font-size: 0.72rem; opacity: 0.75;">Component Adapter</span>
+        </div>
+      </button>
+
+      <button id="tab-angular" title="Angular 17+ Showcase" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--aurora-muted-fg, #aab2b0); cursor: pointer; text-align: left; transition: all 0.15s ease;">
+        <span style="font-size: 1.15rem; width: 24px; text-align: center; flex-shrink: 0;">🅰️</span>
+        <div class="sidebar-text-col" style="display: ${isSidebarCollapsed ? 'none' : 'flex'}; flex-direction: column; overflow: hidden; white-space: nowrap;">
+          <span style="font-size: 0.88rem; font-weight: 600;">Angular 17+</span>
+          <span style="font-size: 0.72rem; opacity: 0.75;">Signals &amp; Standalone</span>
+        </div>
+      </button>
+
+      <button id="tab-model" title="Model &amp; Exporter Inspector" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--aurora-muted-fg, #aab2b0); cursor: pointer; text-align: left; transition: all 0.15s ease;">
+        <span style="font-size: 1.15rem; width: 24px; text-align: center; flex-shrink: 0;">📦</span>
+        <div class="sidebar-text-col" style="display: ${isSidebarCollapsed ? 'none' : 'flex'}; flex-direction: column; overflow: hidden; white-space: nowrap;">
+          <span style="font-size: 0.88rem; font-weight: 600;">Model Inspector</span>
+          <span style="font-size: 0.72rem; opacity: 0.75;">AST &amp; JSON Patches</span>
+        </div>
+      </button>
+
+      <div class="sidebar-section-divider" style="display: ${isSidebarCollapsed ? 'none' : 'block'}; margin: 6px 0 2px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--aurora-muted-fg, #aab2b0); padding: 0 4px; white-space: nowrap;">
+        Documentation
+      </div>
+
+      <button id="tab-docs" title="Documentation — About, API, Privacy &amp; more" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--aurora-muted-fg, #aab2b0); cursor: pointer; text-align: left; transition: all 0.15s ease;">
+        <span style="font-size: 1.15rem; width: 24px; text-align: center; flex-shrink: 0;">📚</span>
+        <div class="sidebar-text-col" style="display: ${isSidebarCollapsed ? 'none' : 'flex'}; flex-direction: column; overflow: hidden; white-space: nowrap;">
+          <span style="font-size: 0.88rem; font-weight: 600;">Documentation</span>
+          <span style="font-size: 0.72rem; opacity: 0.75;">API · About · Privacy</span>
+        </div>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer-tip" style="display: ${isSidebarCollapsed ? 'none' : 'flex'}; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--aurora-border, #485054); font-size: 0.75rem; color: var(--aurora-muted-fg, #aab2b0); flex-direction: column; gap: 4px;">
+      <div style="font-weight: 600; color: var(--aurora-fg, #f1f4ef);">Aurora RTE v0.1.0</div>
+      <div style="opacity: 0.75;">Toggle menu: <kbd style="background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 0.7rem; color: var(--aurora-primary, #b7ff3c);">Ctrl+B</kbd></div>
+    </div>
+  `;
+
+
+  // Main Content Area
+  const mainArea = document.createElement('main');
+  mainArea.className = 'aurora-playground-main';
+  mainArea.style.cssText = `
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  `;
 
   // Content Panes
   const collabPane = document.createElement('div');
   collabPane.id = 'pane-collab';
-  container.appendChild(collabPane);
+  mainArea.appendChild(collabPane);
 
   const singlePane = document.createElement('div');
   singlePane.id = 'pane-single';
   singlePane.style.display = 'none';
-  container.appendChild(singlePane);
+  mainArea.appendChild(singlePane);
 
   const reactPane = document.createElement('div');
   reactPane.id = 'pane-react';
   reactPane.style.display = 'none';
-  container.appendChild(reactPane);
+  mainArea.appendChild(reactPane);
 
   const angularPane = document.createElement('div');
   angularPane.id = 'pane-angular';
   angularPane.style.display = 'none';
-  container.appendChild(angularPane);
+  mainArea.appendChild(angularPane);
 
   const modelPane = document.createElement('div');
   modelPane.id = 'pane-model';
   modelPane.style.display = 'none';
-  container.appendChild(modelPane);
+  mainArea.appendChild(modelPane);
 
+  const docsPane = document.createElement('div');
+  docsPane.id = 'pane-docs';
+  docsPane.style.display = 'none';
+  mainArea.appendChild(docsPane);
+
+  layoutBody.appendChild(sidebar);
+  layoutBody.appendChild(mainArea);
+  container.appendChild(layoutBody);
   rootElement.appendChild(container);
 
   let reactMounted = false;
   let angularMounted = false;
+  let docsMounted = false;
 
   function updateNetworkBadge(connected: boolean) {
     const badge = header.querySelector('#net-badge') as HTMLElement;
     if (!badge) return;
     if (connected) {
       badge.innerHTML = `
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #25E0C4; box-shadow: 0 0 8px #25E0C4;"></span>
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 10px #10B981;"></span>
         <span>WebSocket Live (${myClientId})</span>
       `;
-      badge.style.background = 'rgba(37,224,196,0.15)';
-      badge.style.color = '#25E0C4';
+      badge.style.background = 'rgba(16,185,129,0.14)';
+      badge.style.border = '1px solid rgba(16,185,129,0.35)';
+      badge.style.color = '#10B981';
     } else {
       badge.innerHTML = `
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #7549FF;"></span>
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #6366F1; box-shadow: 0 0 8px rgba(99,102,241,0.5);"></span>
         <span>BroadcastChannel Sync (${myClientId})</span>
       `;
-      badge.style.background = 'rgba(117,73,255,0.15)';
-      badge.style.color = '#a685ff';
+      badge.style.background = 'rgba(99,102,241,0.12)';
+      badge.style.border = '1px solid rgba(99,102,241,0.3)';
+      badge.style.color = '#818cf8';
     }
   }
 
-  // Tab switching logic
-  const tabCollab = nav.querySelector('#tab-collab') as HTMLButtonElement;
-  const tabSingle = nav.querySelector('#tab-single') as HTMLButtonElement;
-  const tabReact = nav.querySelector('#tab-react') as HTMLButtonElement;
-  const tabAngular = nav.querySelector('#tab-angular') as HTMLButtonElement;
-  const tabModel = nav.querySelector('#tab-model') as HTMLButtonElement;
+  // Sidebar Collapse / Expand Functionality
+  function toggleSidebarCollapse(force?: boolean) {
+    isSidebarCollapsed = typeof force === 'boolean' ? force : !isSidebarCollapsed;
+    try {
+      localStorage.setItem('aurora_menu_collapsed', String(isSidebarCollapsed));
+    } catch {}
 
-  function switchTab(activeTab: 'collab' | 'single' | 'react' | 'angular' | 'model') {
-    [tabCollab, tabSingle, tabReact, tabAngular, tabModel].forEach((b) => {
-      b.style.borderBottomColor = 'transparent';
-      b.style.background = 'transparent';
-      b.style.color = 'var(--aurora-muted-fg, #8ca0c2)';
+    sidebar.style.width = isSidebarCollapsed ? '64px' : '260px';
+    sidebar.style.minWidth = isSidebarCollapsed ? '64px' : '260px';
+    sidebar.style.padding = isSidebarCollapsed ? '12px 6px' : '14px 10px';
+
+    const titleEl = sidebar.querySelector('.sidebar-section-title') as HTMLElement;
+    if (titleEl) titleEl.style.display = isSidebarCollapsed ? 'none' : 'block';
+
+    const headerToggle = header.querySelector('#btn-sidebar-toggle') as HTMLElement;
+    if (headerToggle) {
+      headerToggle.style.background = isSidebarCollapsed ? 'transparent' : 'var(--aurora-primary-muted, rgba(183,255,60,0.08))';
+    }
+
+    const innerToggle = sidebar.querySelector('#sidebar-inner-toggle') as HTMLButtonElement;
+    if (innerToggle) {
+      innerToggle.innerHTML = isSidebarCollapsed ? '▶' : '◀';
+      innerToggle.title = isSidebarCollapsed ? 'Expand Menu (Ctrl+B)' : 'Collapse Menu (Ctrl+B)';
+      const headerRow = innerToggle.parentElement;
+      if (headerRow) headerRow.style.justifyContent = isSidebarCollapsed ? 'center' : 'space-between';
+    }
+
+    const textCols = sidebar.querySelectorAll('.sidebar-text-col');
+    textCols.forEach((col) => {
+      (col as HTMLElement).style.display = isSidebarCollapsed ? 'none' : 'flex';
+    });
+
+    const sectionDividers = sidebar.querySelectorAll('.sidebar-section-divider');
+    sectionDividers.forEach((div) => {
+      (div as HTMLElement).style.display = isSidebarCollapsed ? 'none' : 'block';
+    });
+
+    const footerTip = sidebar.querySelector('.sidebar-footer-tip') as HTMLElement;
+    if (footerTip) footerTip.style.display = isSidebarCollapsed ? 'none' : 'flex';
+  }
+
+  const headerSidebarToggle = header.querySelector('#btn-sidebar-toggle');
+  if (headerSidebarToggle) {
+    headerSidebarToggle.addEventListener('click', () => toggleSidebarCollapse());
+  }
+  const sidebarInnerToggle = sidebar.querySelector('#sidebar-inner-toggle');
+  if (sidebarInnerToggle) {
+    sidebarInnerToggle.addEventListener('click', () => toggleSidebarCollapse());
+  }
+
+  // Keyboard shortcut: Ctrl+B / Cmd+B toggles navigation menu
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.getAttribute('contenteditable') === 'true')) {
+        // If user is editing text in RTE, let standard bold or input formatting pass unless no selection
+        return;
+      }
+      e.preventDefault();
+      toggleSidebarCollapse();
+    }
+  });
+
+  // Tab switching logic
+  const tabCollab = sidebar.querySelector('#tab-collab') as HTMLButtonElement;
+  const tabSingle = sidebar.querySelector('#tab-single') as HTMLButtonElement;
+  const tabReact = sidebar.querySelector('#tab-react') as HTMLButtonElement;
+  const tabAngular = sidebar.querySelector('#tab-angular') as HTMLButtonElement;
+  const tabModel = sidebar.querySelector('#tab-model') as HTMLButtonElement;
+  const tabDocs = sidebar.querySelector('#tab-docs') as HTMLButtonElement;
+
+  const tabList = [
+    { btn: tabCollab, id: 'collab', color: '#b7ff3c' },
+    { btn: tabSingle, id: 'single', color: '#b7ff3c' },
+    { btn: tabReact, id: 'react', color: '#b7ff3c' },
+    { btn: tabAngular, id: 'angular', color: '#FF4D6D' },
+    { btn: tabModel, id: 'model', color: '#b7ff3c' },
+    { btn: tabDocs, id: 'docs', color: '#818cf8' }
+  ];
+
+  tabList.forEach(({ btn }) => {
+    btn.addEventListener('mouseenter', () => {
+      if (btn.style.borderColor === 'transparent' || !btn.style.borderColor) {
+        btn.style.background = 'rgba(255,255,255,0.05)';
+        btn.style.color = 'var(--aurora-fg, #f1f4ef)';
+      }
+    });
+    btn.addEventListener('mouseleave', () => {
+      if (btn.style.borderColor === 'transparent') {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--aurora-muted-fg, #aab2b0)';
+      }
+    });
+  });
+
+  function switchTab(activeTab: 'collab' | 'single' | 'react' | 'angular' | 'model' | 'docs') {
+    tabList.forEach(({ btn, id, color }) => {
+      if (id === activeTab) {
+        if (color === '#FF4D6D') {
+          btn.style.background = 'rgba(255,77,109,0.12)';
+          btn.style.borderColor = 'rgba(255,77,109,0.4)';
+          btn.style.boxShadow = '0 0 12px rgba(255,77,109,0.2)';
+        } else if (color === '#818cf8') {
+          btn.style.background = 'rgba(129,140,248,0.12)';
+          btn.style.borderColor = 'rgba(129,140,248,0.4)';
+          btn.style.boxShadow = '0 0 12px rgba(129,140,248,0.2)';
+        } else {
+          btn.style.background = 'rgba(183,255,60,0.12)';
+          btn.style.borderColor = 'rgba(183,255,60,0.4)';
+          btn.style.boxShadow = '0 0 12px rgba(183,255,60,0.15)';
+        }
+        btn.style.color = color;
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.borderColor = 'transparent';
+        btn.style.color = 'var(--aurora-muted-fg, #aab2b0)';
+        btn.style.boxShadow = 'none';
+      }
     });
 
     collabPane.style.display = 'none';
@@ -348,39 +581,31 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
     reactPane.style.display = 'none';
     angularPane.style.display = 'none';
     modelPane.style.display = 'none';
+    docsPane.style.display = 'none';
 
     if (activeTab === 'collab') {
-      tabCollab.style.borderBottomColor = '#28E6F5';
-      tabCollab.style.background = 'rgba(40,230,245,0.08)';
-      tabCollab.style.color = '#28E6F5';
       collabPane.style.display = 'block';
     } else if (activeTab === 'single') {
-      tabSingle.style.borderBottomColor = '#28E6F5';
-      tabSingle.style.background = 'rgba(40,230,245,0.08)';
-      tabSingle.style.color = '#28E6F5';
       singlePane.style.display = 'block';
     } else if (activeTab === 'react') {
-      tabReact.style.borderBottomColor = '#00F0FF';
-      tabReact.style.background = 'rgba(0,240,255,0.08)';
-      tabReact.style.color = '#00F0FF';
       reactPane.style.display = 'block';
       if (!reactMounted) {
         createRoot(reactPane).render(React.createElement(ReactEditorApp));
         reactMounted = true;
       }
     } else if (activeTab === 'angular') {
-      tabAngular.style.borderBottomColor = '#DD0031';
-      tabAngular.style.background = 'rgba(221,0,49,0.08)';
-      tabAngular.style.color = '#FF4D6D';
       angularPane.style.display = 'block';
       if (!angularMounted) {
         mountAngularShowcase(angularPane);
         angularMounted = true;
       }
+    } else if (activeTab === 'docs') {
+      docsPane.style.display = 'block';
+      if (!docsMounted) {
+        mountDocsPane(docsPane);
+        docsMounted = true;
+      }
     } else {
-      tabModel.style.borderBottomColor = '#28E6F5';
-      tabModel.style.background = 'rgba(40,230,245,0.08)';
-      tabModel.style.color = '#28E6F5';
       modelPane.style.display = 'block';
       refreshModelView();
     }
@@ -391,6 +616,7 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
   tabReact.addEventListener('click', () => switchTab('react'));
   tabAngular.addEventListener('click', () => switchTab('angular'));
   tabModel.addEventListener('click', () => switchTab('model'));
+  tabDocs.addEventListener('click', () => switchTab('docs'));
 
   // -------------------------------------------------------------
   // 1. COLLABORATIVE EDITING PANE (Alice & Bob Split View)
@@ -417,13 +643,13 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
           <button id="btn-collab-type-alice" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid var(--aurora-primary); background: transparent; color: var(--aurora-primary); cursor: pointer;">
             ⚡ Alice Types Paragraph
           </button>
-          <button id="btn-collab-bold-bob" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid var(--aurora-secondary, #25E0C4); background: transparent; color: var(--aurora-secondary, #25E0C4); cursor: pointer;">
+          <button id="btn-collab-bold-bob" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid var(--aurora-secondary, #10B981); background: transparent; color: var(--aurora-secondary, #10B981); cursor: pointer;">
             ⚡ Bob Inserts Table
           </button>
-          <button id="btn-collab-comment" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid #28E6F5; background: rgba(40,230,245,0.1); color: #28E6F5; cursor: pointer;">
+          <button id="btn-collab-comment" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid #b7ff3c; background: rgba(183,255,60,0.1); color: #b7ff3c; cursor: pointer;">
             💬 Add Comment
           </button>
-          <button id="btn-collab-suggest" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid #00FF88; background: rgba(0,255,136,0.1); color: #00FF88; cursor: pointer;">
+          <button id="btn-collab-suggest" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid #10B981; background: rgba(16,185,129,0.1); color: #10B981; cursor: pointer;">
             📝 Suggest Change
           </button>
           <button id="btn-collab-reset" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid var(--aurora-border); background: var(--aurora-bg); color: var(--aurora-fg); cursor: pointer;">
@@ -434,15 +660,15 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
     </div>
 
     <!-- Three-Column Layout: Alice, Bob, and Review Gutter -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr 310px; gap: 16px; margin-bottom: 20px;">
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 300px; gap: 16px; margin-bottom: 20px;">
       <!-- ALICE PANEL -->
-      <div style="background: var(--aurora-bg); border: 2px solid var(--aurora-primary); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--aurora-border); padding-bottom: 8px; margin-bottom: 10px;">
+      <div style="background: var(--aurora-bg); border: 2px solid var(--aurora-primary); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; position: relative; min-width: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--aurora-border); padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="background: var(--aurora-primary); color: #040d21; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px;">CLIENT 1</span>
-            <strong style="color: var(--aurora-primary);">Alice (Lead Author)</strong>
+            <span style="background: var(--aurora-primary); color: #040d21; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; white-space: nowrap; display: inline-flex; align-items: center;">CLIENT 1</span>
+            <strong style="color: var(--aurora-primary); white-space: nowrap;">Alice (Lead Author)</strong>
           </div>
-          <span id="alice-status" style="font-size: 0.8rem; color: var(--aurora-muted-fg);">Ready</span>
+          <span id="alice-status" style="font-size: 0.8rem; color: var(--aurora-muted-fg); white-space: nowrap;">Ready</span>
         </div>
         <div id="alice-toolbar" style="margin-bottom: 10px;"></div>
         <div id="alice-editor-mount" style="min-height: 220px; flex: 1; padding: 12px; border: 1px solid var(--aurora-border); border-radius: 6px; background: var(--aurora-bg); color: var(--aurora-fg); outline: none; position: relative;"></div>
@@ -450,13 +676,13 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
       </div>
 
       <!-- BOB PANEL -->
-      <div style="background: var(--aurora-bg); border: 2px solid var(--aurora-secondary, #25E0C4); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--aurora-border); padding-bottom: 8px; margin-bottom: 10px;">
+      <div style="background: var(--aurora-bg); border: 2px solid var(--aurora-secondary, #25E0C4); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; position: relative; min-width: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--aurora-border); padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="background: var(--aurora-secondary, #25E0C4); color: #040d21; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px;">CLIENT 2</span>
-            <strong style="color: var(--aurora-secondary, #25E0C4);">Bob (Reviewer / Co-author)</strong>
+            <span style="background: var(--aurora-secondary, #25E0C4); color: #040d21; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; white-space: nowrap; display: inline-flex; align-items: center;">CLIENT 2</span>
+            <strong style="color: var(--aurora-secondary, #25E0C4); white-space: nowrap;">Bob (Reviewer)</strong>
           </div>
-          <span id="bob-status" style="font-size: 0.8rem; color: var(--aurora-muted-fg);">Ready</span>
+          <span id="bob-status" style="font-size: 0.8rem; color: var(--aurora-muted-fg); white-space: nowrap;">Ready</span>
         </div>
         <div id="bob-toolbar" style="margin-bottom: 10px;"></div>
         <div id="bob-editor-mount" style="min-height: 220px; flex: 1; padding: 12px; border: 1px solid var(--aurora-border); border-radius: 6px; background: var(--aurora-bg); color: var(--aurora-fg); outline: none; position: relative;"></div>
@@ -464,7 +690,7 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
       </div>
 
       <!-- REVIEW & SUGGESTIONS GUTTER -->
-      <div id="collab-review-gutter-mount" style="background: var(--aurora-bg); border: 2px solid #132a59; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+      <div id="collab-review-gutter-mount" style="background: var(--aurora-bg); border: 2px solid var(--aurora-border, #132a59); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; min-width: 0;">
       </div>
     </div>
 
@@ -492,6 +718,8 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
   });
   createToolbar({ editor: editorAlice, container: aliceToolbar });
   createInplaceContextMenu({ editor: editorAlice, container: rootElement });
+  createBubbleMenu({ editor: editorAlice, container: rootElement });
+  createSlashMenu({ editor: editorAlice, container: rootElement, commands: defaultSlashCommands() });
 
   // Initialize Bob Editor
   const bobMount = collabPane.querySelector('#bob-editor-mount') as HTMLElement;
@@ -505,6 +733,8 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
   });
   createToolbar({ editor: editorBob, container: bobToolbar });
   createInplaceContextMenu({ editor: editorBob, container: rootElement });
+  createBubbleMenu({ editor: editorBob, container: rootElement });
+  createSlashMenu({ editor: editorBob, container: rootElement, commands: defaultSlashCommands() });
 
   // Collaborative Remote Carets Presence Managers
   const presenceAlice = createPresenceManager({ container: aliceMount });
@@ -565,13 +795,13 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
   });
 
   // -------------------------------------------------------------
-  // 2. SINGLE EDITOR SHOWCASE PANE
+  // 2. SINGLE EDITOR SHOWCASE PANE (Full Power Aurora Editor)
   // -------------------------------------------------------------
   singlePane.innerHTML = `
     <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
       <div>
-        <h3 style="margin: 0; color: #28E6F5;">🌟 Complete Aurora RTE Feature Showcase</h3>
-        <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: var(--aurora-muted-fg, #8ca0c2);">Full formatting, slash commands (/), bubble menu, tables, custom callouts, and clean Word paste normalization.</p>
+        <h3 style="margin: 0; color: var(--aurora-primary, #b7ff3c); font-weight: 700;">🌟 Complete Aurora RTE Feature Showcase</h3>
+        <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: var(--aurora-muted-fg, #aab2b0);">Full formatting, slash commands (/), bubble menu, tables, custom callouts, and clean Word paste normalization.</p>
       </div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
         <div style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--aurora-border);">
@@ -579,21 +809,21 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
           <select id="select-doc-template" style="padding: 4px 8px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--aurora-border); background: var(--aurora-bg); color: var(--aurora-fg); outline: none; cursor: pointer;">
             <option value="default" selected>Default Workspace</option>
             <option value="article">Semantic Article (Figure + Details)</option>
-            <option value="table">Accessible Table (Sizing & Header)</option>
-            <option value="form">Interactive Form & Dialog</option>
+            <option value="table">Accessible Table (Sizing &amp; Header)</option>
+            <option value="form">Interactive Form &amp; Dialog</option>
           </select>
         </div>
         <div style="display: inline-flex; background: rgba(255,255,255,0.06); padding: 3px; border-radius: 6px; border: 1px solid var(--aurora-border);">
-          <button id="btn-mode-edit" style="padding: 5px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px; border: none; background: var(--aurora-primary); color: #040d21; cursor: pointer; transition: all 0.15s ease;">✏️ Edit Mode</button>
+          <button id="btn-mode-edit" style="padding: 5px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px; border: none; background: var(--aurora-primary); color: var(--aurora-primary-fg, #172000); cursor: pointer; transition: all 0.15s ease;">✏️ Edit Mode</button>
           <button id="btn-mode-view" style="padding: 5px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px; border: none; background: transparent; color: var(--aurora-fg); cursor: pointer; transition: all 0.15s ease;">👁️ View Mode</button>
         </div>
         <button id="btn-mode-source" style="padding: 5px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px; border: 1px solid var(--aurora-primary); background: transparent; color: var(--aurora-primary); cursor: pointer; transition: all 0.15s ease;">
           &lt;/&gt; Source Mode
         </button>
-        <button id="btn-insert-callout" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid rgba(40,230,245,0.4); background: rgba(40,230,245,0.1); color: #28E6F5; cursor: pointer;">
+        <button id="btn-insert-callout" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid rgba(183,255,60,0.4); background: rgba(183,255,60,0.1); color: var(--aurora-primary, #b7ff3c); cursor: pointer;">
           + Custom Callout Block
         </button>
-        <button id="btn-insert-table" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid rgba(37,224,196,0.4); background: rgba(37,224,196,0.1); color: #25E0C4; cursor: pointer;">
+        <button id="btn-insert-table" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: 1px solid rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); color: #10B981; cursor: pointer;">
           + Insert Table (3x3)
         </button>
       </div>
@@ -982,7 +1212,7 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
   const patchLog = collabPane.querySelector('#patch-log') as HTMLElement;
   const patchStats = collabPane.querySelector('#patch-stats') as HTMLElement;
 
-  function appendPatchLog(sender: string, message: string, color: string = '#28E6F5') {
+  function appendPatchLog(sender: string, message: string, color: string = '#b7ff3c') {
     if (!patchLog) return;
     patchCounter++;
     patchStats.textContent = `Patches exchanged: ${patchCounter}`;
@@ -990,7 +1220,7 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
     const line = document.createElement('div');
     line.style.cssText = 'margin-bottom: 3px; word-break: break-all;';
     const time = new Date().toLocaleTimeString();
-    line.innerHTML = `<span style="color: #61759b;">[${time}]</span> <span style="color: ${color}; font-weight: 600;">${sender}:</span> ${message}`;
+    line.innerHTML = `<span style="color: #64748b;">[${time}]</span> <span style="color: ${color}; font-weight: 600;">${sender}:</span> ${message}`;
     patchLog.appendChild(line);
     patchLog.scrollTop = patchLog.scrollHeight;
   }
@@ -1031,7 +1261,7 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
         ? msg.patches.map(p => `${p.op} ${p.path}`).join(', ')
         : 'full snapshot sync';
 
-      const color = msg.senderId.includes('alice') ? '#28E6F5' : '#25E0C4';
+      const color = msg.senderId.includes('alice') ? '#b7ff3c' : '#10B981';
       appendPatchLog(msg.senderName, `Transaction ${msg.transactionId?.slice(-6) || 'sync'} applied [${patchSummary}] via ${source}`, color);
 
       // If sent by Alice, update Bob
@@ -1156,7 +1386,7 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
       editorBob.setDocument(doc);
       editorSingle.setDocument(doc);
     },
-    '#28E6F5'
+    '#b7ff3c'
   );
 
   // Bob Debounced Sync
@@ -1295,6 +1525,161 @@ export function initPlayground(rootElement: HTMLElement = document.body) {
       resizeHandle: newColor
     });
   });
+
+  // -------------------------------------------------------------
+  // DOCUMENTATION PANE — markdown viewer fetched from /api/docs/*
+  // -------------------------------------------------------------
+  function mountDocsPane(container: HTMLElement) {
+    const DOC_PAGES: { slug: string; label: string; icon: string }[] = [
+      { slug: 'quickstart',              label: 'Quickstart',              icon: '⚡' },
+      { slug: 'api-reference',           label: 'API Reference',           icon: '📖' },
+      { slug: 'framework-integrations',  label: 'Angular & React Guide',   icon: '🔌' },
+      { slug: 'extensions',              label: 'Extension SDK',           icon: '🧩' },
+      { slug: 'security',               label: 'Security',                icon: '🔒' },
+      { slug: 'about',                  label: 'About',                   icon: 'ℹ️' },
+      { slug: 'privacy',                label: 'Privacy Statement',       icon: '🛡️' },
+    ];
+
+    container.innerHTML = `
+      <div style="background: var(--aurora-surface, #24292c); border: 1px solid var(--aurora-border, #485054); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; min-height: 600px;">
+
+        <!-- Docs header -->
+        <div style="padding: 16px 20px 12px; border-bottom: 1px solid var(--aurora-border, #485054); display: flex; align-items: center; gap: 12px; background: var(--aurora-bg, #171a1c);">
+          <span style="font-size: 1.4rem;">📚</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--aurora-fg, #f1f4ef);">Aurora RTE Documentation</h3>
+            <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--aurora-muted-fg, #aab2b0);">All guides, API references, and policies in one place.</p>
+          </div>
+        </div>
+
+        <!-- Sub-nav tabs -->
+        <div id="docs-subnav" style="display: flex; gap: 4px; padding: 10px 16px; background: var(--aurora-muted-bg, rgba(255,255,255,0.03)); border-bottom: 1px solid var(--aurora-border, #485054); flex-wrap: wrap;">
+          ${DOC_PAGES.map((p, i) => `
+            <button data-slug="${p.slug}" style="
+              padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;
+              border: 1px solid ${i === 0 ? 'rgba(129,140,248,0.5)' : 'transparent'};
+              background: ${i === 0 ? 'rgba(129,140,248,0.12)' : 'transparent'};
+              color: ${i === 0 ? '#818cf8' : 'var(--aurora-muted-fg, #aab2b0)'};
+            ">${p.icon} ${p.label}</button>
+          `).join('')}
+        </div>
+
+        <!-- Content area -->
+        <div id="docs-content" style="flex: 1; padding: 28px 32px; overflow-y: auto; max-height: 72vh; line-height: 1.75; font-size: 0.9rem; color: var(--aurora-fg, #f1f4ef);">
+          <div id="docs-loading" style="color: var(--aurora-muted-fg, #aab2b0); text-align: center; padding: 60px 0; font-size: 0.95rem;">Loading…</div>
+        </div>
+      </div>
+    `;
+
+    /** Minimal but complete markdown → HTML converter */
+    function mdToHtml(md: string): string {
+      let html = md
+        // Escape raw HTML angle brackets that are NOT part of real markdown (e.g. `<tag>` in prose)
+        // We do this selectively — real code blocks are handled first
+        .replace(/```([\w-]*)\n([\s\S]*?)```/g, (_m, lang, code) => {
+          const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          return `<pre style="background:var(--aurora-bg,#171a1c);border:1px solid var(--aurora-border,#485054);border-radius:6px;padding:14px 18px;overflow-x:auto;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:0.82rem;line-height:1.6;margin:14px 0;"><code class="language-${lang}">${escaped}</code></pre>`;
+        })
+        // Inline code
+        .replace(/`([^`\n]+)`/g, '<code style="background:rgba(255,255,255,0.08);border:1px solid var(--aurora-border,#485054);border-radius:3px;padding:1px 5px;font-family:\'JetBrains Mono\',ui-monospace,monospace;font-size:0.82em;">$1</code>')
+        // H1-H4
+        .replace(/^#### (.+)$/gm, '<h4 style="margin:18px 0 6px;font-size:0.95rem;font-weight:700;color:var(--aurora-fg,#f1f4ef);">$1</h4>')
+        .replace(/^### (.+)$/gm, '<h3 style="margin:22px 0 8px;font-size:1.05rem;font-weight:700;color:var(--aurora-primary,#b7ff3c);">$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2 style="margin:28px 0 10px;font-size:1.2rem;font-weight:700;color:var(--aurora-fg,#f1f4ef);padding-bottom:6px;border-bottom:1px solid var(--aurora-border,#485054);">$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1 style="margin:0 0 16px;font-size:1.5rem;font-weight:800;color:var(--aurora-primary,#b7ff3c);">$1</h1>')
+        // Horizontal rule
+        .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--aurora-border,#485054);margin:22px 0;">')
+        // Blockquote
+        .replace(/^> \[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$/gm, (_m, kind) => {
+          const colours: Record<string,string> = { NOTE:'#818cf8', TIP:'#10B981', IMPORTANT:'#b7ff3c', WARNING:'#f59e0b', CAUTION:'#FF4D6D' };
+          const c = colours[kind] || '#818cf8';
+          return `<div style="border-left:3px solid ${c};background:rgba(255,255,255,0.04);padding:10px 14px;border-radius:0 6px 6px 0;margin:10px 0;"><strong style="color:${c};font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">${kind}</strong>`;
+        })
+        .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid var(--aurora-border,#485054);padding:6px 14px;margin:10px 0;color:var(--aurora-muted-fg,#aab2b0);font-style:italic;">$1</blockquote>')
+        // Bold / italic
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        // Strikethrough
+        .replace(/~~(.+?)~~/g, '<del>$1</del>')
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--aurora-primary,#b7ff3c);text-decoration:underline;text-underline-offset:2px;">$1</a>')
+        // Tables
+        .replace(/^\|(.+)\|$/gm, (line) => {
+          const isSep = /^\|[\s|:-]+\|$/.test(line);
+          if (isSep) return '__TABLE_SEP__';
+          const cells = line.split('|').slice(1,-1).map(c => c.trim());
+          return '<tr>' + cells.map(c => `<td style="padding:7px 12px;border:1px solid var(--aurora-border,#485054);">${c}</td>`).join('') + '</tr>';
+        })
+        .replace(/(__TABLE_SEP__\n)/g, '')
+        // Wrap consecutive <tr> in <table>
+        .replace(/((<tr>.*?<\/tr>\n?)+)/gs, '<table style="border-collapse:collapse;width:100%;margin:14px 0;font-size:0.85rem;">$1</table>')
+        // Style first row as header
+        .replace(/<table([^>]*)><tr>(.*?)<\/tr>/s, (_m, attrs, row) => {
+          const header = row.replace(/<td/g,'<th style="padding:7px 12px;border:1px solid var(--aurora-border,#485054);background:var(--aurora-muted-bg,rgba(255,255,255,0.05));font-weight:700;text-align:left;"').replace(/<\/td>/g,'</th>');
+          return `<table${attrs}><thead><tr>${header}</tr></thead><tbody>`;
+        })
+        .replace(/<\/table>/g, '</tbody></table>')
+        // Unordered lists
+        .replace(/^[-*] (.+)$/gm, '<li style="margin:3px 0;">$1</li>')
+        .replace(/(<li[^>]*>.*<\/li>\n?)+/gs, m => `<ul style="padding-left:20px;margin:8px 0;">${m}</ul>`)
+        // Ordered lists
+        .replace(/^\d+\. (.+)$/gm, '<li style="margin:3px 0;">$1</li>')
+        // Paragraphs — blank-line-delimited
+        .replace(/\n{2,}/g, '</p><p style="margin:10px 0;">')
+        ;
+      return `<p style="margin:0 0 10px;">${html}</p>`;
+    }
+
+    const subnav = container.querySelector('#docs-subnav') as HTMLElement;
+    const content = container.querySelector('#docs-content') as HTMLElement;
+    let currentSlug = '';
+
+    async function loadPage(slug: string) {
+      if (slug === currentSlug) return;
+      currentSlug = slug;
+
+      // Update active subnav button styles
+      subnav.querySelectorAll<HTMLButtonElement>('button[data-slug]').forEach(btn => {
+        const active = btn.dataset.slug === slug;
+        btn.style.background = active ? 'rgba(129,140,248,0.12)' : 'transparent';
+        btn.style.borderColor = active ? 'rgba(129,140,248,0.5)' : 'transparent';
+        btn.style.color = active ? '#818cf8' : 'var(--aurora-muted-fg, #aab2b0)';
+      });
+
+      // 1. Use bundled content (works on GitHub Pages — no server needed)
+      if (BUNDLED_DOCS[slug]) {
+        content.innerHTML = mdToHtml(BUNDLED_DOCS[slug]);
+        content.scrollTop = 0;
+        return;
+      }
+
+      // 2. Fallback: fetch from /api/docs/:slug (Docker / local server)
+      content.innerHTML = '<div style="color:var(--aurora-muted-fg,#aab2b0);text-align:center;padding:60px 0;">Loading…</div>';
+      try {
+        const res = await fetch(`/api/docs/${slug}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const markdown = await res.text();
+        content.innerHTML = mdToHtml(markdown);
+        content.scrollTop = 0;
+      } catch (err) {
+        content.innerHTML = `<div style="color:#FF4D6D;padding:20px 0;">
+          <strong>⚠ Could not load "${slug}".</strong><br>
+          <span style="font-size:0.85rem;color:var(--aurora-muted-fg,#aab2b0);">
+            Error: ${String(err)}
+          </span>
+        </div>`;
+      }
+    }
+
+    // Wire up sub-nav clicks
+    subnav.querySelectorAll<HTMLButtonElement>('button[data-slug]').forEach(btn => {
+      btn.addEventListener('click', () => loadPage(btn.dataset.slug!));
+    });
+
+    // Load the first page automatically
+    loadPage(DOC_PAGES[0].slug);
+  }
 
   // Connect real-time WebSocket
   connectWs();
